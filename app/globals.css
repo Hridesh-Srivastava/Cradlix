@@ -130,16 +130,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: oklch(var(--muted));
+  background: var(--muted);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(var(--muted-foreground));
+  background: var(--muted-foreground);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(var(--foreground));
+  background: var(--foreground);
 }
 
 /* Loading animations */
@@ -155,7 +155,7 @@
 
 /* Custom focus styles */
 .focus-visible:focus-visible {
-  outline: 2px solid oklch(var(--ring));
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
 
@@ -195,16 +195,16 @@
 
 /* Swiper customizations */
 .swiper-pagination-bullet {
-  background: oklch(var(--primary));
+  background: var(--primary);
 }
 
 .swiper-pagination-bullet-active {
-  background: oklch(var(--primary));
+  background: var(--primary);
 }
 
 .swiper-button-next,
 .swiper-button-prev {
-  color: oklch(var(--primary));
+  color: var(--primary);
 }
 
 /* Form improvements */
@@ -227,6 +227,6 @@ img {
 /* Button focus improvements */
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid oklch(var(--ring));
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
 }

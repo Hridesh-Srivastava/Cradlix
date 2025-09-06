@@ -30,7 +30,12 @@ export async function initializeDatabases() {
 }
 
 export async function validateEnvironmentVariables() {
-  const required = ["DATABASE_URL", "MONGODB_URI", "NEXTAUTH_SECRET", "NEXTAUTH_URL"]
+  const required = ["MONGODB_URI", "NEXTAUTH_SECRET"]
+
+  // NEXTAUTH_URL is only required in production
+  if (process.env.NODE_ENV === "production") {
+    required.push("NEXTAUTH_URL")
+  }
 
   const missing = required.filter((key) => !process.env[key])
 
@@ -57,7 +62,7 @@ export async function healthCheck() {
       databases: dbStatus,
       environment: {
         nodeEnv: process.env.NODE_ENV,
-        hasPostgresUrl: !!process.env.DATABASE_URL,
+  hasPostgresUrl: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
         hasMongoUrl: !!process.env.MONGODB_URI,
         hasAuthSecret: !!process.env.NEXTAUTH_SECRET,
       },
