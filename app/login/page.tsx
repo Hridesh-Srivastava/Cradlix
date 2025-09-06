@@ -1,0 +1,42 @@
+import { Suspense } from "react"
+import { redirect } from "next/navigation"
+import { getSession } from "@/lib/auth/session"
+import { LoginForm } from "@/components/auth/login-form"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
+
+interface LoginPageProps {
+  searchParams: {
+    callbackUrl?: string
+    error?: string
+  }
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const session = await getSession()
+
+  // Redirect if already authenticated
+  if (session) {
+    redirect(searchParams.callbackUrl || "/")
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-gray-900">Baby Store</h1>
+          <p className="mt-2 text-gray-600">Your trusted partner for baby products</p>
+        </div>
+
+        <Suspense fallback={<LoadingSpinner />}>
+          <LoginForm callbackUrl={searchParams.callbackUrl} />
+        </Suspense>
+
+        {searchParams.error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            Authentication failed. Please try again.
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
