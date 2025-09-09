@@ -1,13 +1,13 @@
 import type React from "react"
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
-import { getServerSession } from "next-auth"
+import { auth } from "@/lib/auth/config"
 import { authOptions } from "@/lib/auth/config"
 import { AccountSidebar } from "@/components/account/account-sidebar"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session) {
     redirect("/login?callbackUrl=/account")

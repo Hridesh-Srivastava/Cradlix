@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { deleteImage } from '@/lib/cloudinary'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     // Check if user is authenticated
     if (!session?.user) {

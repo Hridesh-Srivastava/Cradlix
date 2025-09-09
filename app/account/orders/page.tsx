@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getServerSession } from "next-auth"
+import { auth } from "@/lib/auth/config"
 import { authOptions } from "@/lib/auth/config"
 import { OrdersList } from "@/components/account/orders-list"
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function OrdersPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     return null

@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { getServerSession } from "next-auth"
+import { auth } from "@/lib/auth/config"
 import { authOptions } from "@/lib/auth/config"
 import { ProfileForm } from "@/components/account/profile-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AccountPage() {
-  const session = await getServerSession(authOptions)
+  const session = await auth()
 
   if (!session?.user) {
     return null

@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { CartProvider } from "@/components/providers/cart-provider"
+import { AuthErrorBoundary } from "@/components/auth/error-boundary"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { Suspense } from "react"
@@ -65,18 +66,20 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <AuthProvider>
-            <CartProvider>
-              <Suspense fallback={null}>
-                <div className="relative flex min-h-screen flex-col">
-                  <Header />
-                  <main className="flex-1">{children}</main>
-                  <Footer />
-                </div>
-                <Toaster />
-              </Suspense>
-            </CartProvider>
-          </AuthProvider>
+          <AuthErrorBoundary>
+            <AuthProvider>
+              <CartProvider>
+                <Suspense fallback={null}>
+                  <div className="relative flex min-h-screen flex-col">
+                    <Header />
+                    <main className="flex-1">{children}</main>
+                    <Footer />
+                  </div>
+                  <Toaster />
+                </Suspense>
+              </CartProvider>
+            </AuthProvider>
+          </AuthErrorBoundary>
         </ThemeProvider>
         <Analytics />
       </body>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
 import { db } from '@/lib/db/postgres'
 import { wishlistItems } from '@/lib/db/schema'
@@ -10,7 +10,7 @@ export async function DELETE(
   { params }: { params: { productId: string } }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

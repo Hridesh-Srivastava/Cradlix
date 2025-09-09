@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
 import { db } from '@/lib/db/postgres'
 import { banners } from '@/lib/db/schema'
@@ -33,7 +33,7 @@ const updateBannerSchema = createBannerSchema.partial()
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     // Check if user is authenticated and is admin
     if (!session?.user || session.user.role !== 'admin') {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     // Check if user is authenticated and is admin
     if (!session?.user || session.user.role !== 'admin') {

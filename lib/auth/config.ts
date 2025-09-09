@@ -1,3 +1,4 @@
+import NextAuth from "next-auth"
 import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -7,6 +8,7 @@ import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
 
+// NextAuth v4 configuration
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
   providers: [
@@ -55,7 +57,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session?.user && token) {
-        // JWT session (for both credentials and OAuth providers)
+        // JWT session - token contains the user data
         session.user.id = token.id as string
         session.user.role = token.role as string
       }
@@ -63,8 +65,8 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ user, token, account }) {
       if (user) {
-        token.role = user.role || "customer"
         token.id = user.id
+        token.role = (user as any).role || "customer"
       }
       
       // For OAuth users, fetch role from database
@@ -93,11 +95,30 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only-change-in-production",
+  },
   pages: {
     signIn: "/login",
     signUp: "/register",
     error: "/auth/error",
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only-change-in-production",
   debug: process.env.NODE_ENV === "development",
+  useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === "production"
+      }
+    }
+  },
 }
+
+// Export NextAuth v4 functions
+export const { auth, handlers, signIn, signOut } = NextAuth(authOptions)

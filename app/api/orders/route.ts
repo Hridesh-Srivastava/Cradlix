@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/postgres'
 import { orders, orderItems, cartItems } from '@/lib/db/schema'
 import { eq, and, desc } from 'drizzle-orm'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
 import { z } from 'zod'
 
@@ -39,7 +39,7 @@ const createOrderSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -97,7 +97,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

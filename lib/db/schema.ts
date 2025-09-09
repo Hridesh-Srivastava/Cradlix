@@ -194,6 +194,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   cartItems: many(cartItems),
   reviews: many(productReviews),
+  wishlistItems: many(wishlistItems),
   accounts: many(accounts),
   sessions: many(sessions),
 }))
@@ -235,6 +236,7 @@ export const productsRelations = relations(products, ({ one, many }) => ({
   reviews: many(productReviews),
   orderItems: many(orderItems),
   testimonials: many(testimonials),
+  wishlistItems: many(wishlistItems),
 }))
 
 export const productImagesRelations = relations(productImages, ({ one }) => ({
@@ -400,6 +402,17 @@ export const heroImages = pgTable(
   }),
 )
 
+// Wishlist items table
+export const wishlistItems = pgTable("wishlist_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userProductIdx: index("wishlist_user_product_idx").on(table.userId, table.productId),
+}))
+
 // Reviews alias for productReviews table
 export const reviews = productReviews
 
@@ -433,3 +446,15 @@ export const testimonialsRelations = relations(testimonials, ({ one }) => ({
 
 // Hero Images relations
 export const heroImagesRelations = relations(heroImages, ({}) => ({}))
+
+// Wishlist items relations
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  user: one(users, {
+    fields: [wishlistItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [wishlistItems.productId],
+    references: [products.id],
+  }),
+}))

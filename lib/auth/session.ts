@@ -16,8 +16,18 @@ export interface ExtendedSession {
 }
 
 export async function getSession(): Promise<ExtendedSession | null> {
-  const session = await getServerSession(authOptions)
-  return session as ExtendedSession | null
+  try {
+    const session = await getServerSession(authOptions)
+    return session as ExtendedSession | null
+  } catch (error) {
+    // Handle JWT_SESSION_ERROR specifically
+    if (error instanceof Error && error.message.includes('Invalid Compact JWE')) {
+      console.warn("JWT session error - corrupted cookies detected, returning null")
+      return null
+    }
+    console.error("Session error:", error)
+    return null
+  }
 }
 
 export async function getCurrentUser(): Promise<ExtendedUser | null> {

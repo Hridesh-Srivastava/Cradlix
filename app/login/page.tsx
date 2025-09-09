@@ -5,18 +5,19 @@ import { LoginForm } from "@/components/auth/login-form"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 interface LoginPageProps {
-  searchParams: {
+  searchParams: Promise<{
     callbackUrl?: string
     error?: string
-  }
+  }>
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const session = await getSession()
+  const params = await searchParams
 
   // Redirect if already authenticated
   if (session) {
-    redirect(searchParams.callbackUrl || "/")
+    redirect(params.callbackUrl || "/")
   }
 
   return (
@@ -28,10 +29,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         </div>
 
         <Suspense fallback={<LoadingSpinner />}>
-          <LoginForm callbackUrl={searchParams.callbackUrl} />
+          <LoginForm callbackUrl={params.callbackUrl} />
         </Suspense>
 
-        {searchParams.error && (
+        {params.error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
             Authentication failed. Please try again.
           </div>
