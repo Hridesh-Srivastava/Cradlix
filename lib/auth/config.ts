@@ -1,9 +1,11 @@
 import type { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
+import CredentialsProvider from "next-auth/providers/credentials"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { db } from "@/lib/db/postgres"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import bcrypt from "bcryptjs"
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db),
@@ -12,21 +14,72 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        try {
+          const user = await db.select().from(users).where(eq(users.email, credentials.email)).limit(1)
+          
+          if (!user[0] || !user[0].password) {
+            return null
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user[0].password)
+          
+          if (!isValid) {
+            return null
+          }
+
+          return {
+            id: user[0].id,
+            email: user[0].email,
+            name: user[0].name,
+            image: user[0].image,
+            role: user[0].role,
+          }
+        } catch (error) {
+          console.error("Auth error:", error)
+          return null
+        }
+      }
+    })
   ],
   callbacks: {
-    async session({ session, user }) {
-      if (session?.user) {
-        const dbUser = await db.select().from(users).where(eq(users.id, user.id)).limit(1)
-        session.user.id = user.id
-        session.user.role = dbUser[0]?.role || "customer"
+    async session({ session, token }) {
+      if (session?.user && token) {
+        // JWT session (for both credentials and OAuth providers)
+        session.user.id = token.id as string
+        session.user.role = token.role as string
       }
       return session
     },
-    async jwt({ user, token }) {
+    async jwt({ user, token, account }) {
       if (user) {
-        token.role = user.role
+        token.role = user.role || "customer"
         token.id = user.id
       }
+      
+      // For OAuth users, fetch role from database
+      if (account?.provider === "google" && token?.email) {
+        try {
+          const dbUser = await db.select().from(users).where(eq(users.email, token.email as string)).limit(1)
+          if (dbUser[0]) {
+            token.role = dbUser[0].role || "customer"
+            token.id = dbUser[0].id
+          }
+        } catch (error) {
+          console.error("Error fetching user role:", error)
+        }
+      }
+      
       return token
     },
     async signIn({ user, account, profile }) {
@@ -37,7 +90,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {

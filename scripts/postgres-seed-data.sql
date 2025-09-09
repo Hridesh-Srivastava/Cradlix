@@ -1,33 +1,96 @@
--- Seed data for the baby ecommerce store
--- Run this after the main schema setup
+-- Seed data for the baby ecommerce store (Adjusted & simplified)
+-- Run AFTER running schema script in database/pgadmin-setup.sql
+-- This version is idempotent (safe to re-run). Schema differences fixed:
+--   * categories has column "image" (NOT image_url)
+--   * products does NOT have safety_certifications, materials arrays
+--   * products has column material (singular) and optional cost_price, etc.
+--   * product_images table has no is_primary column
+--   * coupons.type only allows 'percentage' | 'fixed'
 
--- Insert sample categories
-INSERT INTO categories (id, name, slug, description, image_url, parent_id, sort_order) VALUES
-  ('550e8400-e29b-41d4-a716-446655440001', 'Baby Toys', 'baby-toys', 'Safe and educational toys for babies and toddlers', '/images/categories/baby-toys.jpg', NULL, 1),
-  ('550e8400-e29b-41d4-a716-446655440002', 'Feeding', 'feeding', 'Bottles, bibs, and feeding accessories', '/images/categories/feeding.jpg', NULL, 2),
-  ('550e8400-e29b-41d4-a716-446655440003', 'Clothing', 'clothing', 'Comfortable and cute baby clothing', '/images/categories/clothing.jpg', NULL, 3),
-  ('550e8400-e29b-41d4-a716-446655440004', 'Bath & Care', 'bath-care', 'Bath time essentials and baby care products', '/images/categories/bath-care.jpg', NULL, 4),
-  ('550e8400-e29b-41d4-a716-446655440005', 'Nursery', 'nursery', 'Furniture and decor for baby nursery', '/images/categories/nursery.jpg', NULL, 5),
-  ('550e8400-e29b-41d4-a716-446655440006', 'Soft Toys', 'soft-toys', 'Cuddly and safe soft toys', '550e8400-e29b-41d4-a716-446655440001', 1),
-  ('550e8400-e29b-41d4-a716-446655440007', 'Educational Toys', 'educational-toys', 'Learning and development toys', '550e8400-e29b-41d4-a716-446655440001', 2);
+-- Simpler approach: rely on default UUID. If you want fixed UUIDs, add '::uuid' casts explicitly.
+INSERT INTO categories (name, slug, description, image, parent_id, sort_order)
+VALUES
+  ('Baby Toys', 'baby-toys', 'Safe and educational toys for babies and toddlers', '/images/categories/baby-toys.jpg', NULL, 1),
+  ('Feeding', 'feeding', 'Bottles, bibs, and feeding accessories', '/images/categories/feeding.jpg', NULL, 2),
+  ('Clothing', 'clothing', 'Comfortable and cute baby clothing', '/images/categories/clothing.jpg', NULL, 3),
+  ('Bath & Care', 'bath-care', 'Bath time essentials and baby care products', '/images/categories/bath-care.jpg', NULL, 4),
+  ('Nursery', 'nursery', 'Furniture and decor for baby nursery', '/images/categories/nursery.jpg', NULL, 5)
+ON CONFLICT (slug) DO NOTHING;
 
--- Insert sample products
-INSERT INTO products (id, name, slug, description, short_description, sku, price, compare_price, category_id, brand, age_range, safety_certifications, materials, is_featured) VALUES
-  ('660e8400-e29b-41d4-a716-446655440001', 'Organic Cotton Teddy Bear', 'organic-cotton-teddy-bear', 'Super soft organic cotton teddy bear perfect for newborns and toddlers. Made with 100% organic materials and safe dyes.', 'Soft organic cotton teddy bear for babies', 'TOY-TEDDY-001', 24.99, 29.99, '550e8400-e29b-41d4-a716-446655440006', 'BabyLove', '0-3 years', ARRAY['CE', 'CPSIA'], ARRAY['Organic Cotton', 'Polyester Filling'], true),
-  ('660e8400-e29b-41d4-a716-446655440002', 'Wooden Stacking Rings', 'wooden-stacking-rings', 'Classic wooden stacking toy that helps develop hand-eye coordination and problem-solving skills. Made from sustainable wood.', 'Educational wooden stacking toy', 'TOY-STACK-001', 18.99, NULL, '550e8400-e29b-41d4-a716-446655440007', 'EcoPlay', '6 months - 2 years', ARRAY['CE', 'ASTM'], ARRAY['Sustainable Wood', 'Non-toxic Paint'], true),
-  ('660e8400-e29b-41d4-a716-446655440003', 'Baby Bottle Set', 'baby-bottle-set', 'Complete feeding set with 3 bottles of different sizes, perfect for growing babies. BPA-free and easy to clean.', 'BPA-free baby bottle set', 'FEED-BOTTLE-001', 32.99, 39.99, '550e8400-e29b-41d4-a716-446655440002', 'SafeFeed', '0-12 months', ARRAY['FDA', 'BPA-Free'], ARRAY['Silicone', 'Polypropylene'], false),
-  ('660e8400-e29b-41d4-a716-446655440004', 'Musical Mobile', 'musical-mobile', 'Soothing musical mobile with rotating animals and gentle melodies to help baby sleep peacefully.', 'Musical crib mobile for babies', 'NURS-MOBILE-001', 45.99, NULL, '550e8400-e29b-41d4-a716-446655440005', 'DreamTime', '0-6 months', ARRAY['CE'], ARRAY['Plastic', 'Fabric'], true);
+-- Child categories referencing parent by slug (insert only if parent exists)
+INSERT INTO categories (name, slug, description, image, parent_id, sort_order)
+SELECT 'Soft Toys', 'soft-toys', 'Cuddly and safe soft toys', '/images/categories/soft-toys.jpg', c.id, 1
+FROM categories c WHERE c.slug = 'baby-toys'
+ON CONFLICT (slug) DO NOTHING;
 
--- Insert product images
-INSERT INTO product_images (product_id, url, alt_text, sort_order, is_primary) VALUES
-  ('660e8400-e29b-41d4-a716-446655440001', '/images/products/teddy-bear-1.jpg', 'Organic Cotton Teddy Bear - Front View', 0, true),
-  ('660e8400-e29b-41d4-a716-446655440001', '/images/products/teddy-bear-2.jpg', 'Organic Cotton Teddy Bear - Side View', 1, false),
-  ('660e8400-e29b-41d4-a716-446655440002', '/images/products/stacking-rings-1.jpg', 'Wooden Stacking Rings - Complete Set', 0, true),
-  ('660e8400-e29b-41d4-a716-446655440003', '/images/products/bottle-set-1.jpg', 'Baby Bottle Set - All Sizes', 0, true),
-  ('660e8400-e29b-41d4-a716-446655440004', '/images/products/musical-mobile-1.jpg', 'Musical Mobile - Hanging View', 0, true);
+INSERT INTO categories (name, slug, description, image, parent_id, sort_order)
+SELECT 'Educational Toys', 'educational-toys', 'Learning and development toys', '/images/categories/educational-toys.jpg', c.id, 2
+FROM categories c WHERE c.slug = 'baby-toys'
+ON CONFLICT (slug) DO NOTHING;
 
--- Insert sample coupons
-INSERT INTO coupons (code, name, description, type, value, minimum_amount, usage_limit, is_active, expires_at) VALUES
-  ('WELCOME10', 'Welcome Discount', 'Get 10% off on your first order', 'percentage', 10.00, 50.00, 100, true, '2025-12-31 23:59:59'),
-  ('FREESHIP', 'Free Shipping', 'Free shipping on orders over $75', 'free_shipping', 0.00, 75.00, NULL, true, '2025-12-31 23:59:59'),
-  ('BABY20', 'Baby Special', 'Flat $20 off on orders over $100', 'fixed_amount', 20.00, 100.00, 50, true, '2025-06-30 23:59:59');
+-- Products: use category slug lookups; let UUID default generate.
+INSERT INTO products (name, slug, description, short_description, price, compare_price, cost_price, sku, quantity, category_id, brand, age_range, material, is_active, is_featured)
+SELECT 'Organic Cotton Teddy Bear', 'organic-cotton-teddy-bear',
+       'Super soft organic cotton teddy bear perfect for newborns and toddlers. Certifications: CE, CPSIA. Materials: Organic Cotton, Polyester Filling.',
+       'Soft organic cotton teddy bear for babies', 24.99, 29.99, 15.00, 'TOY-TEDDY-001', 50,
+       c.id, 'BabyLove', '0-3 years', 'Organic Cotton / Polyester', true, true
+FROM categories c WHERE c.slug = 'soft-toys'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (name, slug, description, short_description, price, compare_price, cost_price, sku, quantity, category_id, brand, age_range, material, is_active, is_featured)
+SELECT 'Wooden Stacking Rings', 'wooden-stacking-rings',
+       'Classic wooden stacking toy. Certifications: CE, ASTM. Materials: Sustainable Wood, Non-toxic Paint.',
+       'Educational wooden stacking toy', 18.99, NULL, 10.00, 'TOY-STACK-001', 120,
+       c.id, 'EcoPlay', '6 months - 2 years', 'Wood / Non-toxic Paint', true, true
+FROM categories c WHERE c.slug = 'educational-toys'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (name, slug, description, short_description, price, compare_price, cost_price, sku, quantity, category_id, brand, age_range, material, is_active, is_featured)
+SELECT 'Baby Bottle Set', 'baby-bottle-set',
+       'Complete feeding set (BPA-free). Certifications: FDA, BPA-Free. Materials: Silicone, Polypropylene.',
+       'BPA-free baby bottle set', 32.99, 39.99, 18.00, 'FEED-BOTTLE-001', 80,
+       c.id, 'SafeFeed', '0-12 months', 'Silicone / Polypropylene', true, false
+FROM categories c WHERE c.slug = 'feeding'
+ON CONFLICT DO NOTHING;
+
+INSERT INTO products (name, slug, description, short_description, price, compare_price, cost_price, sku, quantity, category_id, brand, age_range, material, is_active, is_featured)
+SELECT 'Musical Mobile', 'musical-mobile',
+       'Soothing musical mobile with rotating animals. Certifications: CE. Materials: Plastic, Fabric.',
+       'Musical crib mobile', 45.99, NULL, 25.00, 'NURS-MOBILE-001', 40,
+       c.id, 'DreamTime', '0-6 months', 'Plastic / Fabric', true, true
+FROM categories c WHERE c.slug = 'nursery'
+ON CONFLICT DO NOTHING;
+
+-- =========================
+-- Product Images
+-- =========================
+INSERT INTO product_images (product_id, url, alt_text, sort_order)
+SELECT id, '/images/products/teddy-bear-1.jpg', 'Organic Cotton Teddy Bear - Front', 0
+FROM products WHERE slug = 'organic-cotton-teddy-bear'
+  AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.url = '/images/products/teddy-bear-1.jpg');
+
+INSERT INTO product_images (product_id, url, alt_text, sort_order)
+SELECT id, '/images/products/stacking-rings-1.jpg', 'Wooden Stacking Rings - Set', 0
+FROM products WHERE slug = 'wooden-stacking-rings'
+  AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.url = '/images/products/stacking-rings-1.jpg');
+
+INSERT INTO product_images (product_id, url, alt_text, sort_order)
+SELECT id, '/images/products/bottle-set-1.jpg', 'Baby Bottle Set - All Sizes', 0
+FROM products WHERE slug = 'baby-bottle-set'
+  AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.url = '/images/products/bottle-set-1.jpg');
+
+INSERT INTO product_images (product_id, url, alt_text, sort_order)
+SELECT id, '/images/products/musical-mobile-1.jpg', 'Musical Mobile - Hanging', 0
+FROM products WHERE slug = 'musical-mobile'
+  AND NOT EXISTS (SELECT 1 FROM product_images pi WHERE pi.url = '/images/products/musical-mobile-1.jpg');
+
+-- =========================
+-- Coupons (type must be 'percentage' or 'fixed')
+-- =========================
+INSERT INTO coupons (code, name, description, type, value, minimum_amount, maximum_discount, usage_limit, is_active, starts_at, expires_at)
+VALUES
+  ('WELCOME10', 'Welcome Discount', 'Get 10% off on your first order', 'percentage', 10.00, 50.00, NULL, 100, true, CURRENT_TIMESTAMP, '2025-12-31 23:59:59'),
+  ('BABY20', 'Baby Special', 'Flat 20 off on orders over 100', 'fixed', 20.00, 100.00, NULL, 50, true, CURRENT_TIMESTAMP, '2025-06-30 23:59:59')
+ON CONFLICT (code) DO NOTHING;
+
+-- Done.

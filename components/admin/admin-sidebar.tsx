@@ -6,11 +6,16 @@ import { useSession } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { BarChart3, Package, ShoppingCart, Users, Settings, Home } from "lucide-react"
+import { BarChart3, Package, ShoppingCart, Users, Settings, Home, Tag, Award, Image, MessageSquare, Star } from "lucide-react"
 
 const menuItems = [
   { href: "/admin", label: "Dashboard", icon: BarChart3 },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/categories", label: "Categories", icon: Tag },
+  { href: "/admin/brands", label: "Brands", icon: Award },
+  { href: "/admin/banners", label: "Banners", icon: Image },
+  { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
+  { href: "/admin/hero-images", label: "Hero Images", icon: Star },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/settings", label: "Settings", icon: Settings },

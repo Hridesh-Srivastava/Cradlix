@@ -10,82 +10,36 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-// Mock data - replace with actual API calls
-const mockProducts = [
-  {
-    id: "1",
-    name: "Organic Cotton Teddy Bear",
-    slug: "organic-cotton-teddy-bear",
-    price: "24.99",
-    comparePrice: "29.99",
-    inventoryQuantity: 15,
-    isFeatured: true,
-    ageRange: "0-3 years",
-    images: [{ url: "/organic-cotton-teddy-bear-soft-toy.jpg", altText: "Organic Cotton Teddy Bear" }],
-    category: { name: "Soft Toys", slug: "soft-toys" },
-    averageRating: 4.5,
-    totalReviews: 23,
-  },
-  {
-    id: "2",
-    name: "Wooden Stacking Rings",
-    slug: "wooden-stacking-rings",
-    price: "18.99",
-    comparePrice: null,
-    inventoryQuantity: 8,
-    isFeatured: false,
-    ageRange: "6 months - 2 years",
-    images: [{ url: "/wooden-stacking-rings-educational-toy.jpg", altText: "Wooden Stacking Rings" }],
-    category: { name: "Educational Toys", slug: "educational-toys" },
-    averageRating: 4.8,
-    totalReviews: 15,
-  },
-  {
-    id: "3",
-    name: "Baby Bottle Set",
-    slug: "baby-bottle-set",
-    price: "32.99",
-    comparePrice: "39.99",
-    inventoryQuantity: 0,
-    isFeatured: false,
-    ageRange: "0-12 months",
-    images: [{ url: "/baby-bottle-feeding-set-bpa-free.jpg", altText: "Baby Bottle Set" }],
-    category: { name: "Feeding", slug: "feeding" },
-    averageRating: 4.2,
-    totalReviews: 31,
-  },
-]
-
-const mockFilters = {
-  categories: [
-    { id: "1", name: "Baby Toys", count: 45 },
-    { id: "2", name: "Feeding", count: 23 },
-    { id: "3", name: "Clothing", count: 67 },
-    { id: "4", name: "Bath & Care", count: 19 },
-  ],
-  brands: [
-    { name: "BabyLove", count: 12 },
-    { name: "EcoPlay", count: 8 },
-    { name: "SafeFeed", count: 15 },
-    { name: "TinyTots", count: 22 },
-  ],
-  ageRanges: [
-    { range: "0-6 months", count: 34 },
-    { range: "6-12 months", count: 28 },
-    { range: "1-2 years", count: 41 },
-    { range: "2-3 years", count: 25 },
-  ],
-  priceRange: { min: 0, max: 1000 },
-}
+import { useProducts } from "@/hooks/use-products"
+import { useCategories } from "@/hooks/use-categories"
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(mockProducts)
-  const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [activeFilters, setActiveFilters] = useState({})
+  const [activeFilters, setActiveFilters] = useState({
+    category: "",
+    minPrice: "",
+    maxPrice: "",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  })
+  const [currentPage, setCurrentPage] = useState(1)
   const searchParams = useSearchParams()
   const { toast } = useToast()
+
+  // Fetch products with dynamic data
+  const { products, loading, error, pagination } = useProducts({
+    page: currentPage,
+    limit: 12,
+    category: activeFilters.category,
+    search: searchQuery,
+    minPrice: activeFilters.minPrice,
+    maxPrice: activeFilters.maxPrice,
+    sortBy: activeFilters.sortBy,
+    sortOrder: activeFilters.sortOrder,
+  })
+
+  // Fetch categories for filters
+  const { categories } = useCategories({ active: true })
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -93,7 +47,7 @@ export default function ProductsPage() {
     const search = searchParams.get("search")
 
     if (category) {
-      setActiveFilters((prev) => ({ ...prev, categories: [category] }))
+      setActiveFilters((prev) => ({ ...prev, category }))
     }
 
     if (search) {
@@ -103,84 +57,27 @@ export default function ProductsPage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      // Filter products based on search query
-      const filteredProducts = mockProducts.filter(
-        (product) =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.category.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-
-      setProducts(filteredProducts)
-
-      if (filteredProducts.length === 0) {
-        toast({
-          title: "No results found",
-          description: `No products found for "${searchQuery}". Try different keywords.`,
-        })
-      }
-    } catch (error) {
-      toast({
-        title: "Search failed",
-        description: "Failed to search products. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
-    }
+    setCurrentPage(1) // Reset to first page when searching
   }
 
   const handleFilterChange = (newFilters: any) => {
-    setActiveFilters(newFilters)
-    setLoading(true)
+    setActiveFilters(prev => ({ ...prev, ...newFilters }))
+    setCurrentPage(1) // Reset to first page when filtering
+  }
 
-    // Simulate filtering
-    setTimeout(() => {
-      let filteredProducts = [...mockProducts]
-
-      // Apply category filter
-      if (newFilters.categories?.length > 0) {
-        filteredProducts = filteredProducts.filter((product) =>
-          newFilters.categories.some(
-            (catId: string) => mockFilters.categories.find((cat) => cat.id === catId)?.name === product.category.name,
-          ),
-        )
-      }
-
-      // Apply price filter
-      if (newFilters.minPrice !== undefined || newFilters.maxPrice !== undefined) {
-        filteredProducts = filteredProducts.filter((product) => {
-          const price = Number.parseFloat(product.price)
-          return price >= (newFilters.minPrice || 0) && price <= (newFilters.maxPrice || 1000)
-        })
-      }
-
-      // Apply sorting
-      if (newFilters.sortBy) {
-        filteredProducts.sort((a, b) => {
-          switch (newFilters.sortBy) {
-            case "price_asc":
-              return Number.parseFloat(a.price) - Number.parseFloat(b.price)
-            case "price_desc":
-              return Number.parseFloat(b.price) - Number.parseFloat(a.price)
-            case "name":
-              return a.name.localeCompare(b.name)
-            case "rating":
-              return (b.averageRating || 0) - (a.averageRating || 0)
-            default:
-              return 0
-          }
-        })
-      }
-
-      setProducts(filteredProducts)
-      setLoading(false)
-    }, 300)
+  // Show error if products failed to load
+  if (error) {
+    return (
+      <div className="container py-8">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Error Loading Products</h2>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -212,7 +109,12 @@ export default function ProductsPage() {
       <div className="flex gap-8">
         {/* Filters Sidebar */}
         <ProductFilters
-          filters={mockFilters}
+          filters={{
+            categories: categories.map(cat => ({ id: cat.id, name: cat.name, count: 0 })),
+            brands: [],
+            ageRanges: [],
+            priceRange: { min: 0, max: 1000 },
+          }}
           activeFilters={activeFilters}
           onFilterChange={handleFilterChange}
           className="w-64 shrink-0"
@@ -221,13 +123,64 @@ export default function ProductsPage() {
         {/* Products Grid */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-6">
-            <p className="text-sm text-muted-foreground">Showing {products.length} products</p>
+            <p className="text-sm text-muted-foreground">
+              Showing {pagination.total} products
+              {pagination.total > 0 && (
+                <span className="ml-2">
+                  (Page {pagination.page} of {pagination.pages})
+                </span>
+              )}
+            </p>
 
             {/* Mobile Filter Button */}
-            <ProductFilters filters={mockFilters} activeFilters={activeFilters} onFilterChange={handleFilterChange} />
+            <ProductFilters 
+              filters={{
+                categories: categories.map(cat => ({ id: cat.id, name: cat.name, count: 0 })),
+                brands: [],
+                ageRanges: [],
+                priceRange: { min: 0, max: 1000 },
+              }} 
+              activeFilters={activeFilters} 
+              onFilterChange={handleFilterChange} 
+            />
           </div>
 
           <ProductGrid products={products} loading={loading} />
+
+          {/* Pagination */}
+          {pagination.pages > 1 && (
+            <div className="flex justify-center mt-8 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1 || loading}
+              >
+                Previous
+              </Button>
+              
+              {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
+                const pageNum = i + 1
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={currentPage === pageNum ? "default" : "outline"}
+                    onClick={() => setCurrentPage(pageNum)}
+                    disabled={loading}
+                  >
+                    {pageNum}
+                  </Button>
+                )
+              })}
+              
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(prev => Math.min(pagination.pages, prev + 1))}
+                disabled={currentPage === pagination.pages || loading}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

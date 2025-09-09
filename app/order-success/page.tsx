@@ -1,22 +1,25 @@
-import { Suspense } from "react"
-import type { Metadata } from "next"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle } from "lucide-react"
+"use client"
 
-export const metadata: Metadata = {
-  title: "Order Successful - Baby Store",
-  description: "Your order has been placed successfully",
-}
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CheckCircle, Package, Truck, Home } from 'lucide-react'
 
-function OrderSuccessContent({ searchParams }: { searchParams: { orderId?: string } }) {
-  const orderId = searchParams.orderId
+export default function OrderSuccessPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [orderId, setOrderId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const id = searchParams.get('orderId')
+    setOrderId(id)
+  }, [searchParams])
 
   return (
-    <div className="container mx-auto px-4 py-16">
-      <div className="max-w-2xl mx-auto text-center">
-        <Card>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container max-w-2xl mx-auto px-4">
+        <Card className="text-center">
           <CardHeader>
             <div className="flex justify-center mb-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
@@ -25,41 +28,48 @@ function OrderSuccessContent({ searchParams }: { searchParams: { orderId?: strin
           </CardHeader>
           <CardContent className="space-y-6">
             <p className="text-muted-foreground">
-              Thank you for your purchase. Your order has been confirmed and will be processed shortly.
+              Thank you for your order! We've received your order and will process it shortly.
             </p>
-
+            
             {orderId && (
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-sm font-medium">Order ID</p>
-                <p className="text-lg font-mono">{orderId}</p>
+              <div className="bg-gray-100 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground">Order ID</p>
+                <p className="font-mono font-medium">{orderId}</p>
               </div>
             )}
 
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                You will receive an email confirmation shortly with your order details and tracking information.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button asChild>
-                  <Link href="/products">Continue Shopping</Link>
-                </Button>
-                <Button variant="outline" asChild>
-                  <Link href="/account/orders">View Orders</Link>
-                </Button>
+              <h3 className="font-semibold">What happens next?</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-left">
+                  <Package className="h-5 w-5 text-blue-500" />
+                  <div>
+                    <p className="font-medium">Order Processing</p>
+                    <p className="text-sm text-muted-foreground">We'll prepare your items for shipping</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 text-left">
+                  <Truck className="h-5 w-5 text-orange-500" />
+                  <div>
+                    <p className="font-medium">Shipping</p>
+                    <p className="text-sm text-muted-foreground">Your order will be shipped within 1-2 business days</p>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            <div className="flex gap-4 justify-center">
+              <Button variant="outline" onClick={() => router.push('/account/orders')}>
+                View Orders
+              </Button>
+              <Button onClick={() => router.push('/')}>
+                <Home className="mr-2 h-4 w-4" />
+                Continue Shopping
+              </Button>
             </div>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
-}
-
-export default function OrderSuccessPage({ searchParams }: { searchParams: { orderId?: string } }) {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <OrderSuccessContent searchParams={searchParams} />
-    </Suspense>
   )
 }

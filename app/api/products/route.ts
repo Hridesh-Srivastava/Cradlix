@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/postgres"
-import { products, categories } from "@/lib/db/schema"
-import { eq, ilike, and, gte, lte, sql } from "drizzle-orm"
+import { products, categories, productImages } from "@/lib/db/schema"
+import { eq, ilike, and, gte, lte, sql, desc, asc, or } from "drizzle-orm"
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,13 +14,20 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get("sortOrder") || "desc"
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "12")
+    const featured = searchParams.get("featured")
     const offset = (page - 1) * limit
 
     // Build where conditions
     const conditions = []
 
     if (search) {
-      conditions.push(ilike(products.name, `%${search}%`))
+      conditions.push(
+        or(
+          ilike(products.name, `%${search}%`),
+          ilike(products.description, `%${search}%`),
+          ilike(products.sku, `%${search}%`)
+        )
+      )
     }
 
     if (category) {
@@ -35,44 +42,77 @@ export async function GET(request: NextRequest) {
       conditions.push(lte(products.price, Number.parseFloat(maxPrice)))
     }
 
+    if (featured === 'true') {
+      conditions.push(eq(products.isFeatured, true))
+    }
+
     // Add active products filter
     conditions.push(eq(products.isActive, true))
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
-    // Get products with category information
+    // Get products with category and images information
     const productsList = await db
       .select({
         id: products.id,
         name: products.name,
+        slug: products.slug,
         description: products.description,
+        shortDescription: products.shortDescription,
+        sku: products.sku,
         price: products.price,
-        originalPrice: products.originalPrice,
-        images: products.images,
-        category: categories.name,
-        categoryId: products.categoryId,
-        stock: products.stock,
-        rating: products.rating,
-        reviewCount: products.reviewCount,
+        comparePrice: products.comparePrice,
+        inventoryQuantity: products.inventoryQuantity,
+        isFeatured: products.isFeatured,
+        brand: products.brand,
+        ageRange: products.ageRange,
+        category: {
+          id: categories.id,
+          name: categories.name,
+          slug: categories.slug,
+        },
+        images: {
+          id: productImages.id,
+          url: productImages.url,
+          altText: productImages.altText,
+          isPrimary: productImages.isPrimary,
+        },
         createdAt: products.createdAt,
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(productImages, eq(products.id, productImages.productId))
       .where(whereClause)
       .orderBy(
         sortOrder === "desc"
-          ? sql`${products[sortBy as keyof typeof products]} desc`
-          : sql`${products[sortBy as keyof typeof products]} asc`,
+          ? desc(products[sortBy as keyof typeof products])
+          : asc(products[sortBy as keyof typeof products])
       )
       .limit(limit)
       .offset(offset)
+
+    // Group products and their images
+    const productsMap = new Map()
+    productsList.forEach((product) => {
+      if (!productsMap.has(product.id)) {
+        productsMap.set(product.id, {
+          ...product,
+          images: [],
+        })
+      }
+      if (product.images.id) {
+        productsMap.get(product.id).images.push(product.images)
+      }
+    })
+
+    const formattedProducts = Array.from(productsMap.values())
 
     // Get total count for pagination
     const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(products).where(whereClause)
 
     return NextResponse.json({
       success: true,
-      products: productsList,
+      products: formattedProducts,
       pagination: {
         page,
         limit,

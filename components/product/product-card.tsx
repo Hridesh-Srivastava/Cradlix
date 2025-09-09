@@ -15,12 +15,7 @@ import { cn } from "@/lib/utils"
 import type { Product } from "@/lib/types"
 
 interface ProductCardProps {
-  product: Product & {
-    images?: { url: string; altText?: string }[]
-    category?: { name: string; slug: string }
-    averageRating?: number
-    totalReviews?: number
-  }
+  product: Product
   className?: string
 }
 

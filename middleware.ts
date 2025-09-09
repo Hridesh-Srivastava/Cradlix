@@ -3,10 +3,13 @@ import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 // Define protected routes
-const protectedRoutes = ["/dashboard", "/admin", "/profile", "/orders", "/checkout", "/settings", "/wishlist"]
+const protectedRoutes = ["/dashboard", "/admin", "/account", "/checkout", "/settings"]
 const adminRoutes = ["/admin"]
 const moderatorRoutes = ["/admin/products", "/admin/reviews", "/admin/users"]
 const authRoutes = ["/login", "/register"]
+
+// Define public routes that don't need authentication
+const publicRoutes = ["/", "/products", "/categories", "/brands", "/sale", "/api/products", "/api/categories", "/api/brands"]
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -22,6 +25,12 @@ export async function middleware(request: NextRequest) {
   const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route))
   const isModeratorRoute = moderatorRoutes.some((route) => pathname.startsWith(route))
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
+
+  // Allow public routes without authentication
+  if (isPublicRoute && !isProtectedRoute) {
+    return NextResponse.next()
+  }
 
   // Redirect to login if accessing protected route without token
   if (isProtectedRoute && !token) {
@@ -35,12 +44,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
+  // Admin route protection
   if (isAdminRoute && (!token || token.role !== "admin")) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
+  // Moderator route protection
   if (isModeratorRoute && (!token || !["admin", "moderator"].includes(token.role as string))) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
+  }
+
+  // User isolation for account routes
+  if (pathname.startsWith("/account") && token) {
+    // Check if user is trying to access another user's data
+    const pathSegments = pathname.split("/")
+    if (pathSegments.length > 2) {
+      const userId = pathSegments[2]
+      if (userId && userId !== token.id) {
+        return NextResponse.redirect(new URL("/unauthorized", request.url))
+      }
+    }
   }
 
   // Add security headers

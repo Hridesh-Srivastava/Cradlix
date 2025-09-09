@@ -11,28 +11,35 @@ export interface User {
 export interface Product {
   id: string
   name: string
+  slug: string
   description: string
-  price: number
-  comparePrice?: number
-  images: string[]
-  category: string
-  subcategory?: string
+  shortDescription?: string
+  price: string
+  comparePrice?: string
+  inventoryQuantity: number
+  isFeatured: boolean
   brand: string
-  sku: string
-  stock: number
-  isActive: boolean
-  tags: string[]
-  rating: number
-  reviewCount: number
   ageRange: string
-  weight?: number
-  dimensions?: {
-    length: number
-    width: number
-    height: number
+  sku: string
+  categoryId?: string
+  category?: {
+    id: string
+    name: string
+    slug: string
   }
-  createdAt: Date
-  updatedAt: Date
+  images?: {
+    id: string
+    url: string
+    altText?: string
+    isPrimary: boolean
+  }[]
+  safetyCertifications?: string[]
+  materials?: string[]
+  isActive: boolean
+  metaTitle?: string
+  metaDescription?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Category {

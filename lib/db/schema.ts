@@ -1,16 +1,48 @@
 import { pgTable, uuid, varchar, text, timestamp, boolean, integer, decimal, jsonb, index } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
-// Users table
-export const users = pgTable("users", {
+// NextAuth.js required tables - using exact table names expected by NextAuth.js
+export const accounts = pgTable("account", {
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 255 }).notNull(),
+  provider: varchar("provider", { length: 255 }).notNull(),
+  providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+  refresh_token: text("refresh_token"),
+  access_token: text("access_token"),
+  expires_at: integer("expires_at"),
+  token_type: varchar("token_type", { length: 255 }),
+  scope: varchar("scope", { length: 255 }),
+  id_token: text("id_token"),
+  session_state: varchar("session_state", { length: 255 }),
+}, (table) => ({
+  compoundKey: index("account_provider_providerAccountId_idx").on(table.provider, table.providerAccountId),
+}))
+
+export const sessions = pgTable("session", {
+  sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires").notNull(),
+})
+
+export const verificationTokens = pgTable("verificationToken", {
+  identifier: varchar("identifier", { length: 255 }).notNull(),
+  token: varchar("token", { length: 255 }).notNull(),
+  expires: timestamp("expires").notNull(),
+}, (table) => ({
+  compoundKey: index("verificationToken_identifier_token_idx").on(table.identifier, table.token),
+}))
+
+// Users table - NextAuth.js expects "user" (singular) table name
+export const users = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: varchar("email", { length: 255 }).notNull().unique(),
   name: varchar("name", { length: 255 }).notNull(),
+  password: text("password"), // For credentials authentication
   image: text("image"),
   role: varchar("role", { length: 50 }).default("customer"),
-  emailVerified: timestamp("email_verified"),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
+  emailVerified: timestamp("emailVerified"),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
 })
 
 // Categories table
@@ -45,13 +77,9 @@ export const products = pgTable(
     sku: varchar("sku", { length: 100 }).notNull().unique(),
     price: decimal("price", { precision: 10, scale: 2 }).notNull(),
     comparePrice: decimal("compare_price", { precision: 10, scale: 2 }),
-    costPrice: decimal("cost_price", { precision: 10, scale: 2 }),
-    trackInventory: boolean("track_inventory").default(true),
     inventoryQuantity: integer("inventory_quantity").default(0),
-    lowStockThreshold: integer("low_stock_threshold").default(5),
-    weight: decimal("weight", { precision: 8, scale: 2 }),
-    dimensions: jsonb("dimensions"),
     categoryId: uuid("category_id").references(() => categories.id),
+    brandId: uuid("brand_id").references(() => brands.id),
     brand: varchar("brand", { length: 255 }),
     ageRange: varchar("age_range", { length: 100 }),
     safetyCertifications: text("safety_certifications").array(),
@@ -166,6 +194,22 @@ export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   cartItems: many(cartItems),
   reviews: many(productReviews),
+  accounts: many(accounts),
+  sessions: many(sessions),
+}))
+
+export const accountsRelations = relations(accounts, ({ one }) => ({
+  user: one(users, {
+    fields: [accounts.userId],
+    references: [users.id],
+  }),
+}))
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+  user: one(users, {
+    fields: [sessions.userId],
+    references: [users.id],
+  }),
 }))
 
 export const categoriesRelations = relations(categories, ({ one, many }) => ({
@@ -182,10 +226,15 @@ export const productsRelations = relations(products, ({ one, many }) => ({
     fields: [products.categoryId],
     references: [categories.id],
   }),
+  brand: one(brands, {
+    fields: [products.brandId],
+    references: [brands.id],
+  }),
   images: many(productImages),
   cartItems: many(cartItems),
   reviews: many(productReviews),
   orderItems: many(orderItems),
+  testimonials: many(testimonials),
 }))
 
 export const productImagesRelations = relations(productImages, ({ one }) => ({
@@ -247,6 +296,110 @@ export const orderItems = pgTable(
   }),
 )
 
+// Brands table
+export const brands = pgTable(
+  "brands",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: varchar("name", { length: 255 }).notNull(),
+    slug: varchar("slug", { length: 255 }).notNull().unique(),
+    description: text("description"),
+    website: varchar("website", { length: 500 }),
+    logo: text("logo"),
+    isActive: boolean("is_active").default(true),
+    isFeatured: boolean("is_featured").default(false),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    slugIdx: index("idx_brands_slug").on(table.slug),
+    activeIdx: index("idx_brands_is_active").on(table.isActive),
+    featuredIdx: index("idx_brands_is_featured").on(table.isFeatured),
+  }),
+)
+
+// Banners table
+export const banners = pgTable(
+  "banners",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: varchar("title", { length: 255 }).notNull(),
+    subtitle: varchar("subtitle", { length: 255 }),
+    description: text("description"),
+    buttonText: varchar("button_text", { length: 100 }),
+    buttonLink: varchar("button_link", { length: 500 }),
+    position: varchar("position", { length: 50 }).default("hero"),
+    image: text("image"),
+    mobileImage: text("mobile_image"),
+    isActive: boolean("is_active").default(true),
+    startDate: timestamp("start_date"),
+    endDate: timestamp("end_date"),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    positionIdx: index("idx_banners_position").on(table.position),
+    activeIdx: index("idx_banners_is_active").on(table.isActive),
+    dateIdx: index("idx_banners_dates").on(table.startDate, table.endDate),
+  }),
+)
+
+// Testimonials table
+export const testimonials = pgTable(
+  "testimonials",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    customerName: varchar("customer_name", { length: 255 }).notNull(),
+    customerEmail: varchar("customer_email", { length: 255 }),
+    customerLocation: varchar("customer_location", { length: 255 }),
+    customerImage: text("customer_image"),
+    rating: integer("rating").notNull(),
+    title: varchar("title", { length: 255 }).notNull(),
+    content: text("content").notNull(),
+    productId: uuid("product_id").references(() => products.id),
+    isApproved: boolean("is_approved").default(false),
+    isFeatured: boolean("is_featured").default(false),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    productIdx: index("idx_testimonials_product_id").on(table.productId),
+    approvedIdx: index("idx_testimonials_is_approved").on(table.isApproved),
+    featuredIdx: index("idx_testimonials_is_featured").on(table.isFeatured),
+    ratingIdx: index("idx_testimonials_rating").on(table.rating),
+  }),
+)
+
+// Hero Images table
+export const heroImages = pgTable(
+  "hero_images",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    title: varchar("title", { length: 255 }).notNull(),
+    subtitle: varchar("subtitle", { length: 255 }),
+    description: text("description"),
+    buttonText: varchar("button_text", { length: 100 }),
+    buttonLink: varchar("button_link", { length: 500 }),
+    position: varchar("position", { length: 50 }).default("main"),
+    image: text("image"),
+    mobileImage: text("mobile_image"),
+    isActive: boolean("is_active").default(true),
+    startDate: timestamp("start_date"),
+    endDate: timestamp("end_date"),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => ({
+    positionIdx: index("idx_hero_images_position").on(table.position),
+    activeIdx: index("idx_hero_images_is_active").on(table.isActive),
+    dateIdx: index("idx_hero_images_dates").on(table.startDate, table.endDate),
+  }),
+)
+
 // Reviews alias for productReviews table
 export const reviews = productReviews
 
@@ -261,3 +414,22 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
     references: [products.id],
   }),
 }))
+
+// Brands relations
+export const brandsRelations = relations(brands, ({ many }) => ({
+  products: many(products),
+}))
+
+// Banners relations
+export const bannersRelations = relations(banners, ({}) => ({}))
+
+// Testimonials relations
+export const testimonialsRelations = relations(testimonials, ({ one }) => ({
+  product: one(products, {
+    fields: [testimonials.productId],
+    references: [products.id],
+  }),
+}))
+
+// Hero Images relations
+export const heroImagesRelations = relations(heroImages, ({}) => ({}))

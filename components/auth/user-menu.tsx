@@ -56,17 +56,17 @@ export function UserMenu({ user }: UserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => router.push("/profile")}>
+        <DropdownMenuItem onClick={() => router.push("/account/profile")}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => router.push("/orders")}>
+        <DropdownMenuItem onClick={() => router.push("/account/orders")}>
           <ShoppingBag className="mr-2 h-4 w-4" />
           <span>My Orders</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => router.push("/wishlist")}>
+        <DropdownMenuItem onClick={() => router.push("/account/wishlist")}>
           <Heart className="mr-2 h-4 w-4" />
           <span>Wishlist</span>
         </DropdownMenuItem>

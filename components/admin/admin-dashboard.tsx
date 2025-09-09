@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { Package, ShoppingCart, Users, DollarSign } from "lucide-react"
+import { Package, ShoppingCart, Users, DollarSign, Tag, Award, Image, MessageSquare, Star, ArrowRight } from "lucide-react"
+import Link from "next/link"
 
 interface DashboardStats {
   totalProducts: number
@@ -104,6 +106,94 @@ export function AdminDashboard() {
           )
         })}
       </div>
+
+      {/* Management Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Management</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Link href="/admin/categories">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <Tag className="h-5 w-5 text-blue-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Categories</p>
+                    <p className="text-sm text-muted-foreground">Manage product categories</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/brands">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <Award className="h-5 w-5 text-purple-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Brands</p>
+                    <p className="text-sm text-muted-foreground">Manage product brands</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/banners">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <Image className="h-5 w-5 text-green-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Banners</p>
+                    <p className="text-sm text-muted-foreground">Manage promotional banners</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/testimonials">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <MessageSquare className="h-5 w-5 text-orange-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Testimonials</p>
+                    <p className="text-sm text-muted-foreground">Manage customer reviews</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/hero-images">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <Star className="h-5 w-5 text-yellow-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Hero Images</p>
+                    <p className="text-sm text-muted-foreground">Manage homepage content</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+            
+            <Link href="/admin/products">
+              <Button variant="outline" className="w-full justify-start h-auto p-4">
+                <div className="flex items-center space-x-3">
+                  <Package className="h-5 w-5 text-indigo-600" />
+                  <div className="text-left">
+                    <p className="font-medium">Products</p>
+                    <p className="text-sm text-muted-foreground">Manage product catalog</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 ml-auto" />
+                </div>
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Recent Orders */}
       <Card>

@@ -9,34 +9,32 @@
 ## 1. Project Setup
 
 ### Clone/Download the project and navigate to directory
-\`\`\`bash
-cd baby-ecommerce
-\`\`\`
+```env
+# Database URLs
+POSTGRES_URL=postgresql://username:password@localhost:5432/baby_ecommerce
+MONGODB_URI=mongodb://localhost:27017/baby_ecommerce
+# For MongoDB Atlas use:
+# MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/baby_ecommerce
 
-### Install all dependencies
-\`\`\`bash
-npm install
-\`\`\`
+# NextAuth Configuration
+NEXTAUTH_SECRET=your-super-secret-key-here-minimum-32-characters
+NEXTAUTH_URL=http://localhost:3000
 
-### Install additional dependencies if needed
-\`\`\`bash
-npm install @next/font
-npm install @radix-ui/react-accordion
-npm install @radix-ui/react-alert-dialog
-npm install @radix-ui/react-avatar
-npm install @radix-ui/react-checkbox
-npm install @radix-ui/react-collapsible
-npm install @radix-ui/react-dialog
-npm install @radix-ui/react-dropdown-menu
-npm install @radix-ui/react-label
-npm install @radix-ui/react-navigation-menu
-npm install @radix-ui/react-popover
-npm install @radix-ui/react-progress
+# Google OAuth (Get from Google Cloud Console)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Razorpay Configuration (Get from Razorpay Dashboard)
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your-razorpay-key-id
+RAZORPAY_KEY_SECRET=your-razorpay-key-secret
+
+# Optional: Production URL
+# NEXT_PUBLIC_APP_URL=https://yourdomain.com
+```
 npm install @radix-ui/react-radio-group
 npm install @radix-ui/react-scroll-area
 npm install @radix-ui/react-select
 npm install @radix-ui/react-separator
-npm install @radix-ui/react-sheet
 npm install @radix-ui/react-slider
 npm install @radix-ui/react-switch
 npm install @radix-ui/react-tabs
@@ -74,8 +72,11 @@ npm install typescript
 npm install zod
 \`\`\`
 
+> Note: The deprecated `@next/font` package has been removed. Use the built-in `next/font` API in Next.js 14+ (no extra install required).
+
 ## 2. Database Setup
 
+Note: This project uses npm. Do not use pnpm or yarn here. Also, there is no package named "@radix-ui/react-sheet" on npm. Use the "vaul" package or compose a Sheet/Drawer using "@radix-ui/react-dialog".
 ### PostgreSQL Setup (using pgAdmin 4)
 
 1. Open pgAdmin 4
@@ -95,11 +96,11 @@ npm install zod
 
 Create `.env.local` file in the root directory:
 
-\`\`\`env
+```env
 # Database URLs
 POSTGRES_URL=postgresql://username:password@localhost:5432/baby_ecommerce
 MONGODB_URI=mongodb://localhost:27017/baby_ecommerce
-# OR for MongoDB Atlas:
+# For MongoDB Atlas use:
 # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/baby_ecommerce
 
 # NextAuth Configuration
@@ -114,9 +115,9 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 NEXT_PUBLIC_RAZORPAY_KEY_ID=your-razorpay-key-id
 RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 
-# Optional: For production
+# Optional: Production URL
 # NEXT_PUBLIC_APP_URL=https://yourdomain.com
-\`\`\`
+```
 
 ## 4. Google OAuth Setup
 
