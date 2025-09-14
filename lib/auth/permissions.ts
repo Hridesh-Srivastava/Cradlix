@@ -1,4 +1,4 @@
-export type UserRole = "customer" | "admin" | "moderator"
+export type UserRole = "customer" | "moderator" | "admin" | "super-admin"
 
 export const PERMISSIONS = {
   // Customer permissions
@@ -44,12 +44,17 @@ export const PERMISSIONS = {
 
 export function hasPermission(userRole: UserRole, permission: keyof typeof PERMISSIONS.ADMIN): boolean {
   switch (userRole) {
+    case "super-admin":
     case "admin":
-      return PERMISSIONS.ADMIN[permission] || false
-    case "moderator":
-      return PERMISSIONS.MODERATOR[permission] || false
-    case "customer":
-      return PERMISSIONS.CUSTOMER[permission] || false
+      return !!PERMISSIONS.ADMIN[permission]
+    case "moderator": {
+      const map = PERMISSIONS.MODERATOR as Record<string, boolean>
+      return !!map[permission as string]
+    }
+    case "customer": {
+      const map = PERMISSIONS.CUSTOMER as Record<string, boolean>
+      return !!map[permission as string]
+    }
     default:
       return false
   }
@@ -60,11 +65,11 @@ export function requireRole(allowedRoles: UserRole[]) {
 }
 
 export function isAdmin(userRole: UserRole): boolean {
-  return userRole === "admin"
+  return userRole === "admin" || userRole === "super-admin"
 }
 
 export function isModerator(userRole: UserRole): boolean {
-  return userRole === "moderator" || userRole === "admin"
+  return userRole === "moderator" || userRole === "admin" || userRole === "super-admin"
 }
 
 export function isCustomer(userRole: UserRole): boolean {

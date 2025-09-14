@@ -1,36 +1,42 @@
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/postgres'
 import { cartItems, products, productImages } from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { auth } from "@/lib/auth/config"
-import { authOptions } from '@/lib/auth/config'
+import { randomUUID } from 'crypto'
+
+// Helper: resolve cart identifier (userId or anonymous sessionId cookie)
+async function resolveCartIdentity(session: any) {
+  const c = await cookies()
+  const COOKIE_NAME = 'cart_session_id'
+  const userId: string | undefined = session?.user?.id
+  let sessionId: string | undefined = c.get(COOKIE_NAME)?.value
+  if (!userId && !sessionId) {
+    sessionId = randomUUID()
+    // 30 days expiry
+    c.set(COOKIE_NAME, sessionId, { httpOnly: true, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 30 })
+  }
+  return { userId, sessionId }
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const session = await auth()
+  const { userId, sessionId } = await resolveCartIdentity(session)
 
-    const cartItemsList = await db
+    const rows = await db
       .select({
         id: cartItems.id,
         quantity: cartItems.quantity,
-        product: {
-          id: products.id,
-          name: products.name,
-          slug: products.slug,
-          price: products.price,
-          comparePrice: products.comparePrice,
-          inventoryQuantity: products.inventoryQuantity,
-          images: {
-            id: productImages.id,
-            url: productImages.url,
-            altText: productImages.altText,
-            isPrimary: productImages.isPrimary,
-          },
-        },
+        productId: products.id,
+        productName: products.name,
+        productSlug: products.slug,
+        productPrice: products.price,
+        productComparePrice: products.comparePrice,
+        productInventoryQuantity: products.inventoryQuantity,
+        imageUrl: productImages.url,
+        imageAltText: productImages.altText,
       })
       .from(cartItems)
       .leftJoin(products, eq(cartItems.productId, products.id))
@@ -38,11 +44,32 @@ export async function GET(request: NextRequest) {
         eq(products.id, productImages.productId),
         eq(productImages.isPrimary, true)
       ))
-      .where(eq(cartItems.userId, session.user.id))
+  .where(userId ? eq(cartItems.userId, userId) : eq(cartItems.sessionId, sessionId!))
+
+    const cartItemsList = rows.map((r) => ({
+      id: r.id,
+      quantity: r.quantity,
+      product: {
+        id: r.productId,
+        name: r.productName,
+        slug: r.productSlug,
+        price: r.productPrice,
+        comparePrice: r.productComparePrice,
+        inventoryQuantity: r.productInventoryQuantity,
+        images: r.imageUrl
+          ? [
+              {
+                url: r.imageUrl,
+                altText: r.imageAltText || '',
+              },
+            ]
+          : [],
+      },
+    }))
 
     // Calculate totals
-    const subtotal = cartItemsList.reduce((sum, item) => {
-      return sum + (Number(item.product.price) * item.quantity)
+    const subtotal = cartItemsList.reduce((sum: number, item: any) => {
+      return sum + Number(item.product.price) * Number(item.quantity)
     }, 0)
 
     return NextResponse.json({
@@ -62,11 +89,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const session = await auth()
+  const { userId, sessionId } = await resolveCartIdentity(session)
 
     const { productId, quantity = 1 } = await request.json()
 
@@ -81,13 +105,15 @@ export async function POST(request: NextRequest) {
     const existingItem = await db
       .select()
       .from(cartItems)
-      .where(and(
-        eq(cartItems.userId, session.user.id),
-        eq(cartItems.productId, productId)
-      ))
+      .where(
+        and(
+          eq(cartItems.productId, productId),
+          userId ? eq(cartItems.userId, userId) : eq(cartItems.sessionId, sessionId!)
+        )
+      )
       .limit(1)
 
-    if (existingItem[0]) {
+  if (existingItem[0]) {
       // Update quantity
       const updatedItem = await db
         .update(cartItems)
@@ -105,14 +131,9 @@ export async function POST(request: NextRequest) {
       })
     } else {
       // Add new item
-      const newItem = await db
-        .insert(cartItems)
-        .values({
-          userId: session.user.id,
-          productId,
-          quantity,
-        })
-        .returning()
+      const baseValues: any = { productId, quantity }
+      const values = userId ? { ...baseValues, userId } : { ...baseValues, sessionId }
+      const newItem = await db.insert(cartItems).values(values).returning()
 
       return NextResponse.json({
         success: true,
@@ -131,11 +152,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const session = await auth()
+  const { userId, sessionId } = await resolveCartIdentity(session)
 
     const { itemId, quantity } = await request.json()
 
@@ -150,10 +168,12 @@ export async function PUT(request: NextRequest) {
       // Remove item if quantity is 0 or negative
       await db
         .delete(cartItems)
-        .where(and(
-          eq(cartItems.id, itemId),
-          eq(cartItems.userId, session.user.id)
-        ))
+        .where(
+          and(
+            eq(cartItems.id, itemId),
+            userId ? eq(cartItems.userId, userId) : eq(cartItems.sessionId, sessionId!)
+          )
+        )
 
       return NextResponse.json({
         success: true,
@@ -168,10 +188,12 @@ export async function PUT(request: NextRequest) {
         quantity,
         updatedAt: new Date()
       })
-      .where(and(
-        eq(cartItems.id, itemId),
-        eq(cartItems.userId, session.user.id)
-      ))
+      .where(
+        and(
+          eq(cartItems.id, itemId),
+          userId ? eq(cartItems.userId, userId) : eq(cartItems.sessionId, sessionId!)
+        )
+      )
       .returning()
 
     if (!updatedItem[0]) {
@@ -197,14 +219,19 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth()
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  const session = await auth()
+  const { userId, sessionId } = await resolveCartIdentity(session)
 
-    const { searchParams } = new URL(request.url)
-    const itemId = searchParams.get('itemId')
+    // Accept both JSON body and query param forms
+    let itemId: string | null = null
+    try {
+      const body = await request.json()
+      itemId = body?.itemId ?? null
+    } catch {}
+    if (!itemId) {
+      const { searchParams } = new URL(request.url)
+      itemId = searchParams.get('itemId')
+    }
 
     if (!itemId) {
       return NextResponse.json(
@@ -215,10 +242,12 @@ export async function DELETE(request: NextRequest) {
 
     await db
       .delete(cartItems)
-      .where(and(
-        eq(cartItems.id, itemId),
-        eq(cartItems.userId, session.user.id)
-      ))
+      .where(
+        and(
+          eq(cartItems.id, itemId),
+          userId ? eq(cartItems.userId, userId) : eq(cartItems.sessionId, sessionId!)
+        )
+      )
 
     return NextResponse.json({
       success: true,

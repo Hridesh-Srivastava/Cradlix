@@ -40,6 +40,8 @@ export const users = pgTable("user", {
   password: text("password"), // For credentials authentication
   image: text("image"),
   role: varchar("role", { length: 50 }).default("customer"),
+  // Approval status for admin access
+  status: varchar("status", { length: 50 }).default("approved"),
   emailVerified: timestamp("emailVerified"),
   createdAt: timestamp("createdAt").defaultNow(),
   updatedAt: timestamp("updatedAt").defaultNow(),
@@ -54,7 +56,7 @@ export const categories = pgTable(
     slug: varchar("slug", { length: 255 }).notNull().unique(),
     description: text("description"),
     imageUrl: text("image_url"),
-    parentId: uuid("parent_id").references(() => categories.id),
+  parentId: uuid("parent_id").references((() => categories.id) as () => any),
     isActive: boolean("is_active").default(true),
     sortOrder: integer("sort_order").default(0),
     createdAt: timestamp("created_at").defaultNow(),

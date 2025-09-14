@@ -10,28 +10,18 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useCart } from "@/components/providers/cart-provider"
 import { useToast } from "@/hooks/use-toast"
 import { cn } from "@/lib/utils"
+import type { Product as ProductType } from "@/lib/types"
 
 interface ProductDetailsProps {
-  product: {
-    id: string
-    name: string
-    description: string
-    shortDescription: string
-    price: string
-    comparePrice?: string
-    inventoryQuantity: number
-    isFeatured: boolean
-    ageRange: string
-    brand: string
-    sku: string
-    weight?: string
+  product: (ProductType & {
+    averageRating?: number
+    reviewCount?: number
+    seller?: { id: string; name: string; slug?: string; logo?: string | null; website?: string | null }
+  }) & {
+    // Optional fields for UI convenience
     dimensions?: { length: number; width: number; height: number }
-    safetyCertifications: string[]
-    materials: string[]
-    images: { url: string; altText: string }[]
-    category: { name: string; slug: string }
-    averageRating: number
-    totalReviews: number
+    images?: { url: string; altText?: string }[]
+  weight?: string
   }
 }
 
@@ -39,7 +29,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
-  const { dispatch } = useCart()
+  const { addItem } = useCart()
   const { toast } = useToast()
 
   const hasDiscount = product.comparePrice && Number.parseFloat(product.comparePrice) > Number.parseFloat(product.price)
@@ -52,22 +42,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     : 0
 
   const handleAddToCart = () => {
-    dispatch({
-      type: "ADD_ITEM",
-      payload: {
-        id: product.id,
-        name: product.name,
-        price: Number.parseFloat(product.price),
-        image: product.images[0].url,
-        slug: product.slug,
-        quantity,
-      },
-    })
-
-    toast({
-      title: "Added to cart",
-      description: `${quantity} × ${product.name} added to your cart.`,
-    })
+    // Use provider API to keep state consistent
+    addItem(product as unknown as ProductType, quantity)
+    toast({ title: "Added to cart", description: `${quantity} × ${product.name} added to your cart.` })
   }
 
   const handleWishlistToggle = () => {
@@ -83,10 +60,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       {/* Product Images */}
       <div className="space-y-4">
         {/* Main Image */}
-        <div className="aspect-square overflow-hidden rounded-lg border">
+    <div className="aspect-square overflow-hidden rounded-lg border">
           <Image
-            src={product.images[selectedImage].url || "/placeholder.svg"}
-            alt={product.images[selectedImage].altText}
+      src={product.images?.[selectedImage]?.url || "/placeholder.svg"}
+      alt={product.images?.[selectedImage]?.altText || product.name}
             width={600}
             height={600}
             className="h-full w-full object-cover"
@@ -94,9 +71,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         </div>
 
         {/* Thumbnail Images */}
-        {product.images.length > 1 && (
+    {product.images && product.images.length > 1 && (
           <div className="flex gap-2">
-            {product.images.map((image, index) => (
+      {product.images.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setSelectedImage(index)}
@@ -106,8 +83,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 )}
               >
                 <Image
-                  src={image.url || "/placeholder.svg"}
-                  alt={image.altText}
+          src={image.url || "/placeholder.svg"}
+          alt={image.altText || product.name}
                   width={80}
                   height={80}
                   className="h-full w-full object-cover"
@@ -122,26 +99,26 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <p className="text-sm text-muted-foreground">{product.category.name}</p>
+          <p className="text-sm text-muted-foreground">{product.category?.name || ""}</p>
           <h1 className="text-3xl font-bold mt-1">{product.name}</h1>
           <p className="text-muted-foreground mt-2">{product.shortDescription}</p>
         </div>
 
         {/* Rating */}
         <div className="flex items-center gap-2">
-          <div className="flex">
+      <div className="flex">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
                 key={star}
                 className={cn(
                   "h-5 w-5",
-                  star <= product.averageRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300",
+      star <= (product.averageRating || 0) ? "fill-yellow-400 text-yellow-400" : "text-gray-300",
                 )}
               />
             ))}
           </div>
           <span className="text-sm text-muted-foreground">
-            {product.averageRating} ({product.totalReviews} reviews)
+    {product.averageRating || 0} ({product.reviewCount || 0} reviews)
           </span>
         </div>
 
@@ -169,6 +146,32 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               <span className="text-sm font-medium">Out of Stock</span>
             </div>
           )}
+        </div>
+
+        {/* Seller and ETA */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {product.seller && (
+            <div className="flex items-center gap-3 p-3 border rounded-md">
+              {product.seller.logo ? (
+                <Image src={product.seller.logo} alt={product.seller.name} width={32} height={32} className="rounded" />
+              ) : (
+                <Shield className="h-5 w-5 text-muted-foreground" />
+              )}
+              <div className="text-sm">
+                <div className="text-muted-foreground">Sold by</div>
+                <div className="font-medium">{product.seller.name}</div>
+              </div>
+            </div>
+          )}
+          <div className="flex items-center gap-3 p-3 border rounded-md">
+            <Truck className="h-5 w-5 text-muted-foreground" />
+            <div className="text-sm">
+              <div className="text-muted-foreground">Estimated delivery</div>
+              <div className="font-medium">
+                {new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Quantity & Actions */}
@@ -281,7 +284,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Materials:</span>
-                <span>{product.materials.join(", ")}</span>
+                <span>{product.materials?.join(", ") || "—"}</span>
               </div>
             </div>
           </TabsContent>
@@ -291,7 +294,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
               <div>
                 <h4 className="font-medium mb-2">Safety Certifications:</h4>
                 <div className="flex gap-2">
-                  {product.safetyCertifications.map((cert) => (
+                  {product.safetyCertifications?.map((cert) => (
                     <Badge key={cert} variant="secondary">
                       {cert}
                     </Badge>

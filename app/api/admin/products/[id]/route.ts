@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
-import { db } from '@/lib/db/postgres'
+import { db, client } from '@/lib/db/postgres'
 import { products, productImages } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { uploadImage, deleteImage } from '@/lib/cloudinary'
@@ -34,8 +34,8 @@ export async function GET(
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+  // Check if user is authenticated and is admin, moderator, or super-admin
+  if (!session?.user || !['admin','moderator','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -66,15 +66,15 @@ export async function GET(
       GROUP BY p.id, c.name, c.slug
     `
 
-    const result = await db.execute(productQuery, [productId])
+    const result = await client.unsafe(productQuery, [productId])
     
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     }
 
     return NextResponse.json({
       success: true,
-      data: result.rows[0],
+      data: result[0],
     })
   } catch (error) {
     console.error('Admin product GET error:', error)
@@ -92,8 +92,8 @@ export async function PUT(
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+  // Check if user is authenticated and is admin, moderator, or super-admin
+  if (!session?.user || !['admin','moderator','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -144,7 +144,7 @@ export async function PUT(
           public_id: `baby-ecommerce/products/${productId}-${Date.now()}-${i}`,
         })
 
-        if (uploadResult.success) {
+  if (uploadResult.success && uploadResult.data?.secure_url) {
           const [imageRecord] = await db.insert(productImages).values({
             productId: productId,
             url: uploadResult.data.secure_url,
@@ -188,8 +188,8 @@ export async function DELETE(
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+  // Check if user is authenticated and is admin, moderator, or super-admin
+  if (!session?.user || !['admin','moderator','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

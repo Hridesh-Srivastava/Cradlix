@@ -3,9 +3,7 @@ import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
 // Define protected routes
-const protectedRoutes = ["/dashboard", "/admin", "/account", "/checkout", "/settings"]
-const adminRoutes = ["/admin"]
-const moderatorRoutes = ["/admin/products", "/admin/reviews", "/admin/users"]
+const protectedRoutes = ["/dashboard", "/admin", "/account", "/checkout", "/settings", "/super-admin"]
 const authRoutes = ["/login", "/register"]
 
 // Define public routes that don't need authentication
@@ -22,8 +20,9 @@ export async function middleware(request: NextRequest) {
 
   // Check if the current path is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
-  const isAdminRoute = adminRoutes.some((route) => pathname.startsWith(route))
-  const isModeratorRoute = moderatorRoutes.some((route) => pathname.startsWith(route))
+  const isAdminRoot = pathname === "/admin"
+  const isAdminSection = pathname.startsWith("/admin/")
+  const isSuperAdminRoot = pathname === "/super-admin"
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route))
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
@@ -44,14 +43,32 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url))
   }
 
-  // Admin route protection
-  if (isAdminRoute && (!token || token.role !== "admin")) {
-    return NextResponse.redirect(new URL("/unauthorized", request.url))
-  }
-
-  // Moderator route protection
-  if (isModeratorRoute && (!token || !["admin", "moderator"].includes(token.role as string))) {
-    return NextResponse.redirect(new URL("/unauthorized", request.url))
+  // Admin section protection
+  if (isSuperAdminRoot) {
+    // Only super-admin can access the dedicated super admin dashboard
+    if (!token || token.role !== 'super-admin') {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
+  } else if (isAdminRoot) {
+    // Only admins or super-admins can view the root admin dashboard
+    if (!token || !["admin", "super-admin"].includes(token.role as string)) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
+  } else if (isAdminSection) {
+    // Super-admin only for users management pages
+    if (pathname.startsWith('/admin/users')) {
+      if (!token || token.role !== 'super-admin') {
+        return NextResponse.redirect(new URL("/unauthorized", request.url))
+      }
+    }
+    // Require approved status for admin access (defense-in-depth)
+    if (!token || (token as any).status && (token as any).status !== 'approved') {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
+    // Admin subpages: allow admin, super-admin, or moderator
+    if (!token || !["admin", "super-admin", "moderator"].includes(token.role as string)) {
+      return NextResponse.redirect(new URL("/unauthorized", request.url))
+    }
   }
 
   // User isolation for account routes (only when a UUID-like userId is present)

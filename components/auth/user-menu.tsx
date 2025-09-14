@@ -1,7 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
-import { User, LogOut, Settings, ShoppingBag, Heart, Shield } from "lucide-react"
+import { User, LogOut, Settings, ShoppingBag, Heart, Shield, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -76,12 +76,16 @@ export function UserMenu({ user }: UserMenuProps) {
           <span>Settings</span>
         </DropdownMenuItem>
 
-        {(user.role === "admin" || user.role === "moderator") && (
+        {(user.role === "admin" || user.role === "moderator" || user.role === "super-admin") && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/admin")}>
               <Shield className="mr-2 h-4 w-4" />
               <span>Admin Panel</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => router.push("/admin/products/new")}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              <span>Add Product</span>
             </DropdownMenuItem>
           </>
         )}

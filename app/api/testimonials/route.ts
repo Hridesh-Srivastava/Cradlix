@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db/postgres"
 import { testimonials } from "@/lib/db/schema"
-import { and, desc, eq, isNull, lte, or } from "drizzle-orm"
+import { and, desc, eq } from "drizzle-orm"
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,13 +9,11 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured") === "true"
     const limit = parseInt(searchParams.get("limit") || "6")
 
-    const now = new Date()
-
-    const where = and(
-      eq(testimonials.isApproved, true),
-      // Optional featured filter
-      featured ? eq(testimonials.isFeatured, true) : undefined,
-    ).filter(Boolean) as any
+    const conditions = [eq(testimonials.isApproved, true)] as any[]
+    if (featured) {
+      conditions.push(eq(testimonials.isFeatured, true))
+    }
+    const where = conditions.length ? and(...conditions) : undefined
 
     const rows = await db
       .select({
@@ -29,7 +27,7 @@ export async function GET(request: NextRequest) {
         content: testimonials.content,
       })
       .from(testimonials)
-      .where(where)
+  .where(where)
       .orderBy(desc(testimonials.sortOrder), desc(testimonials.createdAt))
       .limit(limit)
 

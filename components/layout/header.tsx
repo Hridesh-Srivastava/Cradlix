@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { ShoppingCart, Search, Menu, Heart, Baby } from "lucide-react"
+import { ShoppingCart, Search, Menu, Heart, Baby, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +24,8 @@ export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { data: session } = useSession()
   const { state: cartState } = useCart()
+  const role = (session?.user as any)?.role as string | undefined
+  const canManageProducts = role === 'admin' || role === 'moderator' || role === 'super-admin'
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,6 +60,15 @@ export function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
+          {/* Quick Add Product for admins (desktop) */}
+          {canManageProducts && (
+            <Button size="sm" variant="default" asChild className="hidden md:inline-flex">
+              <Link href="/admin/products/new" className="inline-flex items-center gap-1">
+                <Plus className="h-4 w-4" />
+                Add Product
+              </Link>
+            </Button>
+          )}
           {/* Search Icon for Mobile */}
           <Button variant="ghost" size="icon" className="lg:hidden">
             <Search className="h-5 w-5" />
@@ -113,6 +124,15 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
+
+                {canManageProducts && (
+                  <>
+                    <hr className="my-4" />
+                    <Link href="/admin/products/new" className="text-lg font-medium transition-colors hover:text-primary">
+                      Add Product
+                    </Link>
+                  </>
+                )}
 
                 {!session?.user && (
                   <>

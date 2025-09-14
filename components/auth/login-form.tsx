@@ -12,20 +12,20 @@ import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 
-interface LoginFormProps {
-  callbackUrl?: string
-}
+interface LoginFormProps { callbackUrl?: string }
 
-export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
+export function LoginForm({ callbackUrl }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [isCredentialsLoading, setIsCredentialsLoading] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [formError, setFormError] = useState<string | null>(null)
   const router = useRouter()
   const { toast } = useToast()
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
+    setFormError(null)
     
     if (!email || !password) {
       toast({
@@ -33,6 +33,7 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
         description: "Please enter both email and password.",
         variant: "destructive",
       })
+      setFormError("Please enter both email and password.")
       return
     }
 
@@ -46,22 +47,27 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
       })
 
       if (result?.error) {
-        toast({
-          title: "Sign in failed",
-          description: "Invalid email or password. Please try again.",
-          variant: "destructive",
-        })
+  const message = result.error === 'CredentialsSignin' ? 'Invalid email or password.' : 'Authentication failed.'
+  setFormError(message)
+  toast({ title: "Sign in failed", description: message, variant: "destructive" })
         return
       }
 
       // Check if sign in was successful
       const session = await getSession()
       if (session) {
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully signed in.",
-        })
-        router.push(callbackUrl)
+        setFormError(null)
+        const role = (session.user as any)?.role
+        const hasCb = !!callbackUrl && callbackUrl !== '/' && callbackUrl !== '/login'
+        const destination = hasCb
+          ? (callbackUrl as string)
+          : role === 'super-admin'
+            ? '/super-admin'
+            : role === 'admin'
+              ? '/admin'
+              : '/'
+        toast({ title: "Welcome back!", description: "You have been successfully signed in." })
+        router.push(destination)
         router.refresh()
       }
     } catch (error) {
@@ -70,6 +76,7 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
         description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
+  setFormError("An unexpected error occurred. Please try again.")
     } finally {
       setIsCredentialsLoading(false)
     }
@@ -95,11 +102,17 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
       // Check if sign in was successful
       const session = await getSession()
       if (session) {
-        toast({
-          title: "Welcome back!",
-          description: "You have been successfully signed in.",
-        })
-        router.push(callbackUrl)
+        const role = (session.user as any)?.role
+        const hasCb = !!callbackUrl && callbackUrl !== '/' && callbackUrl !== '/login'
+        const destination = hasCb
+          ? (callbackUrl as string)
+          : role === 'super-admin'
+            ? '/super-admin'
+            : role === 'admin'
+              ? '/admin'
+              : '/'
+        toast({ title: "Welcome back!", description: "You have been successfully signed in." })
+        router.push(destination)
         router.refresh()
       }
     } catch (error) {
@@ -120,6 +133,11 @@ export function LoginForm({ callbackUrl = "/" }: LoginFormProps) {
         <CardDescription>Sign in to your account to continue shopping for your little ones</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {formError && (
+          <div role="alert" className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            {formError}
+          </div>
+        )}
         <form onSubmit={handleCredentialsSignIn} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

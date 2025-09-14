@@ -18,7 +18,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   // Redirect if already authenticated
   if (session) {
-    redirect(params.callbackUrl || "/")
+    const cb = params.callbackUrl
+    if (cb && cb.startsWith("/") && cb !== "/login") {
+      redirect(cb)
+    }
+    // Default for super admin
+    if ((session.user as any)?.role === 'super-admin') {
+      redirect('/super-admin')
+    }
+    redirect("/")
   }
 
   return (

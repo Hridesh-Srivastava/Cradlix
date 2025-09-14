@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
-import { db } from '@/lib/db/postgres'
+import { db, client } from '@/lib/db/postgres'
 import { products, productImages } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { uploadImage } from '@/lib/cloudinary'
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+  // Check if user is authenticated and is admin, moderator, or super-admin
+  if (!session?.user || !['admin','moderator','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -49,19 +49,26 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit
 
-    // Build query conditions
-    let whereConditions = []
+    // Build query conditions safely using params
+    const conds: string[] = []
+    const params: any[] = []
+    let idx = 1
     if (search) {
-      whereConditions.push(`p.name ILIKE '%${search}%' OR p.description ILIKE '%${search}%'`)
+      conds.push(`(p.name ILIKE $${idx} OR p.description ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
     }
     if (categoryId) {
-      whereConditions.push(`p.category_id = '${categoryId}'`)
+      conds.push(`p.category_id = $${idx}`)
+      params.push(categoryId)
+      idx++
     }
     if (isActive !== null) {
-      whereConditions.push(`p.is_active = ${isActive === 'true'}`)
+      conds.push(`p.is_active = $${idx}`)
+      params.push(isActive === 'true')
+      idx++
     }
-
-    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : ''
+    const whereClause = conds.length ? `WHERE ${conds.join(' AND ')}` : ''
 
     // Get products with images
     const productsQuery = `
@@ -90,8 +97,8 @@ export async function GET(request: NextRequest) {
       LIMIT ${limit} OFFSET ${offset}
     `
 
-    const result = await db.execute(productsQuery)
-    const products = result.rows
+  const result = await client.unsafe(productsQuery, params)
+  const products = result as any[]
 
     // Get total count
     const countQuery = `
@@ -99,8 +106,8 @@ export async function GET(request: NextRequest) {
       FROM products p
       ${whereClause}
     `
-    const countResult = await db.execute(countQuery)
-    const total = parseInt(countResult.rows[0].total)
+  const countResult = await client.unsafe(countQuery, params)
+  const total = parseInt((countResult[0] as any).total)
 
     return NextResponse.json({
       success: true,
@@ -127,8 +134,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+  // Check if user is authenticated and is admin, moderator, or super-admin
+  if (!session?.user || !['admin','moderator','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -158,10 +165,10 @@ export async function POST(request: NextRequest) {
           public_id: `baby-ecommerce/products/${newProduct.id}-${i}`,
         })
 
-        if (uploadResult.success) {
+    if (uploadResult.success && uploadResult.data?.secure_url) {
           const [imageRecord] = await db.insert(productImages).values({
             productId: newProduct.id,
-            url: uploadResult.data.secure_url,
+      url: uploadResult.data.secure_url,
             altText: `${validatedData.name} - Image ${i + 1}`,
             sortOrder: i,
             isPrimary: i === 0,

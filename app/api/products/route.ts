@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (minPrice) {
-      conditions.push(gte(products.price, Number.parseFloat(minPrice)))
+      conditions.push(gte(products.price, minPrice))
     }
 
     if (maxPrice) {
-      conditions.push(lte(products.price, Number.parseFloat(maxPrice)))
+      conditions.push(lte(products.price, maxPrice))
     }
 
     if (featured === 'true') {
@@ -52,6 +52,14 @@ export async function GET(request: NextRequest) {
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
     // Get products with category and images information
+    // Restrict sort fields to a safe set
+    const sortMap = {
+      createdAt: products.createdAt,
+      price: products.price,
+      name: products.name,
+    } as const
+    const sortCol = sortMap[(sortBy as keyof typeof sortMap) || 'createdAt'] || products.createdAt
+
     const productsList = await db
       .select({
         id: products.id,
@@ -83,11 +91,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .leftJoin(productImages, eq(products.id, productImages.productId))
       .where(whereClause)
-      .orderBy(
-        sortOrder === "desc"
-          ? desc(products[sortBy as keyof typeof products])
-          : asc(products[sortBy as keyof typeof products])
-      )
+  .orderBy(sortOrder === "desc" ? desc(sortCol) : asc(sortCol))
       .limit(limit)
       .offset(offset)
 
@@ -100,7 +104,7 @@ export async function GET(request: NextRequest) {
           images: [],
         })
       }
-      if (product.images.id) {
+      if (product.images && (product.images as any).id) {
         productsMap.get(product.id).images.push(product.images)
       }
     })
@@ -110,7 +114,7 @@ export async function GET(request: NextRequest) {
     // Get total count for pagination
     const [{ count }] = await db.select({ count: sql<number>`count(*)` }).from(products).where(whereClause)
 
-    return NextResponse.json({
+  const res = NextResponse.json({
       success: true,
       products: formattedProducts,
       pagination: {
@@ -119,7 +123,9 @@ export async function GET(request: NextRequest) {
         total: Number(count),
         pages: Math.ceil(Number(count) / limit),
       },
-    })
+  })
+  res.headers.set('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600')
+  return res
   } catch (error) {
     console.error("Products fetch error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

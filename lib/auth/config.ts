@@ -28,6 +28,54 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          // Bootstrap Super Admin using env credentials (no UI exposure)
+          const adminEmail = process.env.SUPER_ADMIN_EMAIL
+          const adminPassword = process.env.SUPER_ADMIN_PASSWORD
+          if (adminEmail && adminPassword && credentials.email === adminEmail && credentials.password === adminPassword) {
+            // Ensure user exists and is super-admin
+            const existing = await db.select().from(users).where(eq(users.email, adminEmail)).limit(1)
+            if (!existing[0]) {
+              const hashed = await bcrypt.hash(adminPassword, 10)
+              const [created] = await db.insert(users).values({
+                email: adminEmail,
+                name: 'Super Admin',
+                role: 'super-admin',
+                status: 'approved',
+                password: hashed,
+                image: null as any,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              }).returning()
+              return {
+                id: created.id,
+                email: created.email,
+                name: created.name,
+                image: created.image || undefined,
+                role: created.role,
+                status: created.status,
+              } as any
+            } else {
+              // Ensure role is super-admin; set password if missing
+              let updatedUser = existing[0]
+              if (existing[0].role !== 'super-admin' || !existing[0].password || existing[0].status !== 'approved') {
+                const hashed = await bcrypt.hash(adminPassword, 10)
+                const [updated] = await db.update(users)
+                  .set({ role: 'super-admin', status: 'approved', password: hashed, updatedAt: new Date() })
+                  .where(eq(users.id, existing[0].id))
+                  .returning()
+                updatedUser = updated
+              }
+              return {
+                id: updatedUser.id,
+                email: updatedUser.email,
+                name: updatedUser.name,
+                image: updatedUser.image || undefined,
+                role: updatedUser.role,
+                status: updatedUser.status,
+              } as any
+            }
+          }
+
           const user = await db.select().from(users).where(eq(users.email, credentials.email)).limit(1)
           
           if (!user[0] || !user[0].password) {
@@ -46,6 +94,7 @@ export const authOptions: NextAuthOptions = {
             name: user[0].name,
             image: user[0].image,
             role: user[0].role,
+            status: (user[0] as any).status || 'approved',
           }
         } catch (error) {
           console.error("Auth error:", error)
@@ -55,18 +104,20 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async session({ session, token }) {
+  async session({ session, token }) {
       if (session?.user && token) {
         // JWT session - token contains the user data
         session.user.id = token.id as string
         session.user.role = token.role as string
+    ;(session.user as any).status = (token as any).status || 'approved'
       }
       return session
     },
-    async jwt({ user, token, account }) {
+  async jwt({ user, token, account }) {
       if (user) {
         token.id = user.id
         token.role = (user as any).role || "customer"
+    ;(token as any).status = (user as any).status || 'approved'
       }
       
       // For OAuth users, fetch role from database
@@ -76,6 +127,7 @@ export const authOptions: NextAuthOptions = {
           if (dbUser[0]) {
             token.role = dbUser[0].role || "customer"
             token.id = dbUser[0].id
+      ;(token as any).status = (dbUser[0] as any).status || 'approved'
           }
         } catch (error) {
           console.error("Error fetching user role:", error)

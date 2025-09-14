@@ -21,7 +21,7 @@ interface Review {
   title: string
   comment: string
   isVerifiedPurchase: boolean
-  createdAt: Date
+  createdAt: Date | string
   user: { name: string; image?: string | null }
   helpfulCount?: number
 }
@@ -253,7 +253,9 @@ export function ProductReviews({ productId, reviews, averageRating, totalReviews
                               />
                             ))}
                           </div>
-                          <span className="text-sm text-muted-foreground">{review.createdAt.toLocaleDateString()}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(review.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
 
