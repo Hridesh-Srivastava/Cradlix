@@ -9,13 +9,13 @@ config()
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dqdkbgshz',
-  api_key: process.env.CLOUDINARY_API_KEY || '935333464895341',
-  api_secret: process.env.CLOUDINARY_API_SECRET || '4ZRVJ9Ow_9G8B4Bn0JvaoEdo6jQ',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 async function syncGoogleAvatars() {
-  console.log('🔄 Syncing Google OAuth avatars to Cloudinary...')
+  console.log('Syncing Google OAuth avatars to Cloudinary...')
 
   try {
     // Get all users with Google avatars
@@ -37,20 +37,20 @@ async function syncGoogleAvatars() {
 
       // Skip if already synced to Cloudinary
       if (user.image?.includes('cloudinary.com')) {
-        console.log(`  ⏭️ Already synced to Cloudinary`)
+        console.log(`Already synced to Cloudinary`)
         skippedCount++
         continue
       }
 
       // Skip if not a Google avatar
       if (!user.image?.includes('googleusercontent.com')) {
-        console.log(`  ⏭️ Not a Google avatar`)
+        console.log(`Not a Google avatar`)
         skippedCount++
         continue
       }
 
       try {
-        console.log(`  📤 Syncing Google avatar to Cloudinary...`)
+        console.log(`Syncing Google avatar to Cloudinary...`)
         
         // Upload Google avatar to Cloudinary
         const uploadResult = await cloudinary.uploader.upload(
@@ -80,29 +80,29 @@ async function syncGoogleAvatars() {
         syncedCount++
 
       } catch (error) {
-        console.log(`  ❌ Failed to sync: ${error}`)
+        console.log(`Failed to sync: ${error}`)
         errorCount++
       }
     }
 
-    console.log('\n📊 Sync Summary:')
-    console.log(`  ✅ Successfully synced: ${syncedCount}`)
-    console.log(`  ⏭️ Skipped: ${skippedCount}`)
-    console.log(`  ❌ Errors: ${errorCount}`)
-    console.log(`  📊 Total processed: ${usersWithGoogleAvatars.length}`)
+    console.log('\nSync Summary:')
+    console.log(`Successfully synced: ${syncedCount}`)
+    console.log(`Skipped: ${skippedCount}`)
+    console.log(`Errors: ${errorCount}`)
+    console.log(`Total processed: ${usersWithGoogleAvatars.length}`)
 
   } catch (error) {
-    console.error('❌ Error syncing Google avatars:', error)
+    console.error('Error syncing Google avatars:', error)
   }
 }
 
 // Run the sync
 syncGoogleAvatars()
   .then(() => {
-    console.log('🎉 Google avatar sync finished!')
+    console.log('Google avatar sync finished!')
     process.exit(0)
   })
   .catch((error) => {
-    console.error('💥 Google avatar sync failed:', error)
+    console.error('Google avatar sync failed:', error)
     process.exit(1)
   })

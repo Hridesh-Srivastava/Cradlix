@@ -1,5 +1,5 @@
-import NextAuth from "next-auth"
 import type { NextAuthOptions } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
@@ -86,7 +86,9 @@ export const authOptions: NextAuthOptions = {
     },
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
-        return !!(profile?.email && profile?.email_verified)
+  // email_verified is provider-specific; use a safe cast
+  const emailVerified = (profile as any)?.email_verified
+  return !!(profile?.email && emailVerified)
       }
       return true
     },
@@ -101,7 +103,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
-    signUp: "/register",
     error: "/auth/error",
   },
   secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only-change-in-production",
@@ -121,4 +122,20 @@ export const authOptions: NextAuthOptions = {
 }
 
 // Export NextAuth v4 functions
-export const { auth, handlers, signIn, signOut } = NextAuth(authOptions)
+// Provide a NextAuth v4-compatible auth() helper used across the app
+// Returns the current session (or null) on the server using getServerSession
+export async function auth() {
+  try {
+    return await getServerSession(authOptions)
+  } catch (error) {
+    // Suppress static-detection noise during build; return null gracefully
+    if (error instanceof Error && error.message.includes("Dynamic server usage")) {
+      return null
+    }
+    // Optional: log other unexpected errors in dev
+    if (process.env.NODE_ENV !== "production") {
+      console.error("auth() error:", error)
+    }
+    return null
+  }
+}

@@ -11,13 +11,13 @@ config()
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dqdkbgshz',
-  api_key: process.env.CLOUDINARY_API_KEY || '935333464895341',
-  api_secret: process.env.CLOUDINARY_API_SECRET || '4ZRVJ9Ow_9G8B4Bn0JvaoEdo6jQ',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 async function uploadToCloudinary() {
-  console.log('☁️ Uploading local images to Cloudinary...')
+  console.log('Uploading local images to Cloudinary...')
 
   try {
     // Get all products with their current images
@@ -42,7 +42,7 @@ async function uploadToCloudinary() {
         const fullImagePath = path.join(process.cwd(), 'public', localImagePath.substring(1))
         
         if (fs.existsSync(fullImagePath)) {
-          console.log(`  📤 Uploading ${localImagePath} to Cloudinary...`)
+          console.log(`Uploading ${localImagePath} to Cloudinary...`)
           
           try {
             // Upload to Cloudinary
@@ -52,7 +52,7 @@ async function uploadToCloudinary() {
               resource_type: 'image',
             })
 
-            console.log(`  ✅ Uploaded successfully! URL: ${uploadResult.secure_url}`)
+            console.log(`Uploaded successfully! URL: ${uploadResult.secure_url}`)
 
             // Update the database with the Cloudinary URL
             await db.update(productImages)
@@ -62,32 +62,32 @@ async function uploadToCloudinary() {
               })
               .where(eq(productImages.productId, product.id))
 
-            console.log(`  💾 Updated database with Cloudinary URL`)
+            console.log(`Updated database with Cloudinary URL`)
             
           } catch (uploadError) {
-            console.log(`  ❌ Upload failed: ${uploadError}`)
+            console.log(`Upload failed: ${uploadError}`)
           }
         } else {
-          console.log(`  ⚠️ Image file not found: ${fullImagePath}`)
+          console.log(`Image file not found: ${fullImagePath}`)
         }
       } else {
-        console.log(`  ⚠️ No image mapping found for ${product.slug}`)
+        console.log(`No image mapping found for ${product.slug}`)
       }
     }
 
-    console.log('✅ Cloudinary upload completed!')
+    console.log('Cloudinary upload completed!')
   } catch (error) {
-    console.error('❌ Error uploading to Cloudinary:', error)
+    console.error('Error uploading to Cloudinary:', error)
   }
 }
 
 // Run the upload
 uploadToCloudinary()
   .then(() => {
-    console.log('🎉 Cloudinary upload finished!')
+    console.log('Cloudinary upload finished!')
     process.exit(0)
   })
   .catch((error) => {
-    console.error('💥 Cloudinary upload failed:', error)
+    console.error('Cloudinary upload failed:', error)
     process.exit(1)
   })

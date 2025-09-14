@@ -65,7 +65,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+  <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="baby-store-theme" disableTransitionOnChange>
           <AuthErrorBoundary>
             <AuthProvider>
               <CartProvider>

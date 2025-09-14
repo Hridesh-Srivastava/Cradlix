@@ -1,4 +1,5 @@
 import type React from "react"
+export const dynamic = "force-dynamic"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/config"
 import { authOptions } from "@/lib/auth/config"

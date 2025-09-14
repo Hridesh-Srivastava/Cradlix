@@ -1,5 +1,3 @@
-"use client"
-
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -29,15 +27,6 @@ export default function NotFound() {
                 <Search className="mr-2 h-4 w-4" />
                 Browse Products
               </Link>
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              onClick={() => window.history.back()}
-              className="w-full"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go Back
             </Button>
           </div>
           

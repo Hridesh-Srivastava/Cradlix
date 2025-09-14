@@ -31,7 +31,6 @@
     "@hookform/resolvers": "^3.10.0",
     "@libsql/client": "latest",
     "@libsql/client-wasm": "latest",
-    "@next/font": "^14.2.15",
     "@opentelemetry/api": "latest",
     "@planetscale/database": "latest",
     "@prisma/client": "latest",

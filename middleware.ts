@@ -54,13 +54,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/unauthorized", request.url))
   }
 
-  // User isolation for account routes
-  if (pathname.startsWith("/account") && token) {
-    // Check if user is trying to access another user's data
-    const pathSegments = pathname.split("/")
-    if (pathSegments.length > 2) {
-      const userId = pathSegments[2]
-      if (userId && userId !== token.id) {
+  // User isolation for account routes (only when a UUID-like userId is present)
+  if (pathname.startsWith("/account/") && token) {
+    const segments = pathname.split("/").filter(Boolean) // e.g. ["account", "<maybe-id>", ...]
+    const maybeId = segments[1]
+    // Strict UUID v4 pattern (accepts lowercase/uppercase hex)
+    const uuidV4 = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/
+    if (maybeId && uuidV4.test(maybeId)) {
+      if (!token.id || maybeId !== (token.id as string)) {
         return NextResponse.redirect(new URL("/unauthorized", request.url))
       }
     }

@@ -6,13 +6,13 @@ config()
 
 // Configure Cloudinary
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'dqdkbgshz',
-  api_key: process.env.CLOUDINARY_API_KEY || '935333464895341',
-  api_secret: process.env.CLOUDINARY_API_SECRET || '4ZRVJ9Ow_9G8B4Bn0JvaoEdo6jQ',
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 })
 
 async function seedCloudinaryData() {
-  console.log('🌱 Seeding Cloudinary with sample data...')
+  console.log('Seeding Cloudinary with sample data...')
 
   try {
     // Create sample images for different categories

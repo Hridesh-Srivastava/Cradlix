@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Plus, Search, Edit, Trash2, Eye, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,55 +10,59 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
+import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
-// Mock products data for admin
-const mockAdminProducts = [
-  {
-    id: "1",
-    name: "Organic Cotton Teddy Bear",
-    sku: "TOY-TEDDY-001",
-    price: "24.99",
-    inventoryQuantity: 15,
-    category: "Soft Toys",
-    status: "active",
-    image: "/organic-cotton-teddy-bear-soft-toy.jpg",
-    createdAt: "2024-01-15",
-  },
-  {
-    id: "2",
-    name: "Wooden Stacking Rings",
-    sku: "TOY-STACK-001",
-    price: "18.99",
-    inventoryQuantity: 8,
-    category: "Educational Toys",
-    status: "active",
-    image: "/wooden-stacking-rings-educational-toy.jpg",
-    createdAt: "2024-01-10",
-  },
-  {
-    id: "3",
-    name: "Baby Bottle Set",
-    sku: "FEED-BOTTLE-001",
-    price: "32.99",
-    inventoryQuantity: 0,
-    category: "Feeding",
-    status: "out_of_stock",
-    image: "/baby-bottle-feeding-set-bpa-free.jpg",
-    createdAt: "2024-01-05",
-  },
-]
+interface AdminProductRow {
+  id: string
+  name: string
+  sku: string
+  price: string | number
+  inventory_quantity: number
+  category_name?: string | null
+  is_active?: boolean
+  created_at?: string
+  images?: Array<{ id: string; url: string; isPrimary?: boolean }>
+}
 
 export function ProductManagement() {
-  const [products, setProducts] = useState(mockAdminProducts)
+  const [products, setProducts] = useState<AdminProductRow[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const [total, setTotal] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
-  const filteredProducts = products.filter(
-    (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  useEffect(() => {
+    const controller = new AbortController()
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+        if (searchQuery.trim()) params.set("search", searchQuery.trim())
+        const res = await fetch(`/api/admin/products?${params.toString()}`, { signal: controller.signal })
+        if (!res.ok) {
+          if (res.status === 401) throw new Error("Unauthorized. Please login as admin.")
+          throw new Error(`Failed to load products (${res.status})`)
+        }
+        const json = await res.json()
+        const rows: AdminProductRow[] = json.data.products
+        setProducts(rows)
+        setTotal(json.data.pagination.total)
+      } catch (e: any) {
+        if (e.name === "AbortError") return
+        setError(e.message || "Failed to load products")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    load()
+    return () => controller.abort()
+  }, [page, limit, searchQuery])
+
+  const pages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit])
 
   const handleDeleteProduct = (productId: string) => {
     setProducts(products.filter((p) => p.id !== productId))
@@ -69,8 +73,10 @@ export function ProductManagement() {
   }
 
   const handleToggleStatus = (productId: string) => {
-    setProducts(
-      products.map((p) => (p.id === productId ? { ...p, status: p.status === "active" ? "inactive" : "active" } : p)),
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, is_active: p.is_active ? false : true } as AdminProductRow : p,
+      ),
     )
     toast({
       title: "Status updated",
@@ -78,11 +84,11 @@ export function ProductManagement() {
     })
   }
 
-  const getStatusBadge = (status: string, inventory: number) => {
-    if (inventory === 0) {
+  const getStatusBadge = (active: boolean | undefined, inventory: number) => {
+    if (inventory <= 0) {
       return <Badge variant="destructive">Out of Stock</Badge>
     }
-    if (status === "active") {
+    if (active) {
       return <Badge variant="default">Active</Badge>
     }
     return <Badge variant="secondary">Inactive</Badge>
@@ -133,12 +139,19 @@ export function ProductManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredProducts.map((product) => (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      <LoadingSpinner />
+                    </TableCell>
+                  </TableRow>
+                ) : products.length > 0 ? (
+                  products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="relative h-12 w-12 rounded-md overflow-hidden">
                         <Image
-                          src={product.image || "/placeholder.svg"}
+                          src={product.images?.find((i) => i.isPrimary)?.url || product.images?.[0]?.url || "/placeholder.svg"}
                           alt={product.name}
                           fill
                           className="object-cover"
@@ -148,23 +161,23 @@ export function ProductManagement() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{product.name}</div>
-                        <div className="text-sm text-muted-foreground">Created {product.createdAt}</div>
+                        <div className="text-sm text-muted-foreground">Created {product.created_at ? new Date(product.created_at).toLocaleDateString() : "-"}</div>
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.category_name || "-"}</TableCell>
                     <TableCell className="font-medium">₹{product.price}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <span>{product.inventoryQuantity}</span>
-                        {product.inventoryQuantity <= 5 && product.inventoryQuantity > 0 && (
+                        <span>{product.inventory_quantity}</span>
+                        {product.inventory_quantity <= 5 && product.inventory_quantity > 0 && (
                           <Badge variant="outline" className="text-xs">
                             Low
                           </Badge>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(product.status, product.inventoryQuantity)}</TableCell>
+                    <TableCell>{getStatusBadge(product.is_active ?? true, product.inventory_quantity)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -182,7 +195,7 @@ export function ProductManagement() {
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleToggleStatus(product.id)}>
-                            {product.status === "active" ? "Deactivate" : "Activate"}
+                            {product.is_active ? "Deactivate" : "Activate"}
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteProduct(product.id)}
@@ -195,16 +208,32 @@ export function ProductManagement() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-8">
+                      <p className="text-muted-foreground">No products found.</p>
+                    </TableCell>
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </div>
 
-          {filteredProducts.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No products found matching your search.</p>
+          {/* Pagination */}
+          <div className="flex items-center justify-between py-4">
+            <div className="text-sm text-muted-foreground">
+              Page {page} of {pages} • {total} total
             </div>
-          )}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
+                Previous
+              </Button>
+              <Button variant="outline" size="sm" disabled={page >= pages} onClick={() => setPage((p) => Math.min(pages, p + 1))}>
+                Next
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

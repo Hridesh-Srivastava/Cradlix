@@ -1,4 +1,5 @@
 import { Suspense } from "react"
+export const dynamic = "force-dynamic"
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/auth/session"
 import { LoginForm } from "@/components/auth/login-form"

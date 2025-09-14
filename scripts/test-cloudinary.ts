@@ -6,7 +6,7 @@ config()
 
 async function testCloudinary() {
   try {
-    console.log('🧪 Testing Cloudinary upload...')
+    console.log('Testing Cloudinary upload...')
     
     // Check environment variables
     console.log('Cloudinary config:')
@@ -26,24 +26,24 @@ async function testCloudinary() {
     })
     
     if (result.success) {
-      console.log('✅ Upload successful!')
+      console.log('Upload successful!')
       console.log('URL:', result.data.secure_url)
       console.log('Public ID:', result.data.public_id)
     } else {
-      console.log('❌ Upload failed:', result.error)
+      console.log('Upload failed:', result.error)
     }
     
   } catch (error) {
-    console.error('💥 Test failed:', error)
+    console.error('Test failed:', error)
   }
 }
 
 testCloudinary()
   .then(() => {
-    console.log('🎉 Test completed!')
+    console.log('Test completed!')
     process.exit(0)
   })
   .catch((error) => {
-    console.error('💥 Test failed:', error)
+    console.error('Test failed:', error)
     process.exit(1)
   })

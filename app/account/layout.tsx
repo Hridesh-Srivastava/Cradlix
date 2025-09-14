@@ -1,4 +1,5 @@
 import type React from "react"
+export const dynamic = "force-dynamic"
 import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/config"
