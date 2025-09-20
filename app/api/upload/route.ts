@@ -7,17 +7,34 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated
+    // Check if user is authenticated and has elevated permissions
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const role = session.user.role as string | undefined
+    if (!role || !['admin', 'moderator', 'super-admin'].includes(role)) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const formData = await request.formData()
     const file = formData.get('file') as File
-    const folder = formData.get('folder') as string || 'baby-ecommerce'
+    let folder = (formData.get('folder') as string) || 'baby-ecommerce/uploads'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    // Validate file type and size (max 10MB)
+    if (!file.type?.startsWith('image/')) {
+      return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
+    }
+    if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large. Max size is 10MB.' }, { status: 400 })
+    }
+
+    // Sanitize/limit folder to our namespace
+    if (!folder.startsWith('baby-ecommerce/')) {
+      folder = 'baby-ecommerce/uploads'
     }
 
     // Convert file to buffer

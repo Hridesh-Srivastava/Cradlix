@@ -8,7 +8,10 @@ import { eq, desc, sql, and } from "drizzle-orm"
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.id || (session.user.role !== "admin" && session.user.role !== "moderator")) {
+    if (
+      !session?.user?.id ||
+      !["admin", "moderator", "super-admin"].includes(session.user.role as string)
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -49,7 +52,7 @@ export async function GET(request: NextRequest) {
         customerName: order.customerName || "Unknown Customer",
         amount: order.amount,
         status: order.status,
-        createdAt: order.createdAt.toISOString(),
+        createdAt: (order.createdAt ? new Date(order.createdAt) : new Date()).toISOString(),
       })),
     }
 

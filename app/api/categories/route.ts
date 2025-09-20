@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/postgres'
 import { categories } from '@/lib/db/schema'
-import { eq, and, desc, asc } from 'drizzle-orm'
+import { eq, and, desc, asc, isNull } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const parentId = searchParams.get('parentId')
     const active = searchParams.get('active')
-    const sortBy = searchParams.get('sortBy') || 'sortOrder'
-    const sortOrder = searchParams.get('sortOrder') || 'asc'
+  const sortBy = searchParams.get('sortBy') || 'sortOrder'
+  const sortOrder = searchParams.get('sortOrder') || 'asc'
 
     let whereConditions = []
 
     if (parentId === 'null' || parentId === '') {
-      whereConditions.push(eq(categories.parentId, null))
+      whereConditions.push(isNull(categories.parentId))
     } else if (parentId) {
       whereConditions.push(eq(categories.parentId, parentId))
     }
@@ -25,15 +25,19 @@ export async function GET(request: NextRequest) {
 
     const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined
 
+    // Map of allowed sort fields to prevent unsafe dynamic access
+    const sortMap = {
+      sortOrder: categories.sortOrder,
+      createdAt: categories.createdAt,
+      name: categories.name,
+    } as const
+    const sortCol = sortMap[(sortBy as keyof typeof sortMap) || 'sortOrder'] || categories.sortOrder
+
     const categoriesList = await db
       .select()
       .from(categories)
       .where(whereClause)
-      .orderBy(
-        sortOrder === 'desc'
-          ? desc(categories[sortBy as keyof typeof categories])
-          : asc(categories[sortBy as keyof typeof categories])
-      )
+      .orderBy(sortOrder === 'desc' ? desc(sortCol) : asc(sortCol))
 
     return NextResponse.json({
       success: true,

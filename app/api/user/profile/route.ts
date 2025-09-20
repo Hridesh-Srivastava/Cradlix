@@ -13,12 +13,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get user ID from query params for admin access, otherwise use session user ID
+  // Get user ID from query params for admin/super-admin access, otherwise use session user ID
     const { searchParams } = new URL(request.url)
     const requestedUserId = searchParams.get('userId')
     
-    // Only allow admin to access other users' profiles
-    const targetUserId = (session.user.role === 'admin' && requestedUserId) ? requestedUserId : session.user.id
+  // Only allow admin or super-admin to access other users' profiles
+  const isPrivileged = session.user.role === 'admin' || session.user.role === 'super-admin'
+  const targetUserId = (isPrivileged && requestedUserId) ? requestedUserId : session.user.id
 
     const user = await db
       .select({
@@ -38,8 +39,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    // Ensure user can only access their own data (unless admin)
-    if (session.user.role !== 'admin' && user[0].id !== session.user.id) {
+    // Ensure user can only access their own data (unless admin/super-admin)
+    if (!isPrivileged && user[0].id !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -84,7 +85,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, email, userId } = body
+  const { name, email, userId } = body
 
     if (!name || !email) {
       return NextResponse.json(
@@ -93,11 +94,12 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Only allow admin to update other users' profiles
-    const targetUserId = (session.user.role === 'admin' && userId) ? userId : session.user.id
+  // Only allow admin or super-admin to update other users' profiles
+  const isPrivileged = session.user.role === 'admin' || session.user.role === 'super-admin'
+  const targetUserId = (isPrivileged && userId) ? userId : session.user.id
 
-    // Ensure user can only update their own data (unless admin)
-    if (session.user.role !== 'admin' && targetUserId !== session.user.id) {
+    // Ensure user can only update their own data (unless admin/super-admin)
+    if (!isPrivileged && targetUserId !== session.user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

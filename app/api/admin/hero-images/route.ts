@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+    // Check if user is authenticated and is admin or super-admin
+    if (!session?.user || !['admin','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated and is admin
-    if (!session?.user || session.user.role !== 'admin') {
+    // Check if user is authenticated and is admin or super-admin
+    if (!session?.user || !['admin','super-admin'].includes(session.user.role as string)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -172,9 +172,18 @@ export async function POST(request: NextRequest) {
 
     // Save to database
     const [newHeroImage] = await db.insert(heroImages).values({
-      ...validatedData,
-      image: imageUrl,
-      mobileImage: mobileImageUrl,
+      title: validatedData.title,
+      subtitle: validatedData.subtitle,
+      description: validatedData.description,
+      buttonText: validatedData.buttonText,
+      buttonLink: validatedData.buttonLink,
+      position: validatedData.position,
+      image: imageUrl ?? undefined,
+      mobileImage: mobileImageUrl ?? undefined,
+      isActive: validatedData.isActive,
+      startDate: validatedData.startDate ? new Date(validatedData.startDate) : undefined,
+      endDate: validatedData.endDate ? new Date(validatedData.endDate) : undefined,
+      sortOrder: validatedData.sortOrder,
       createdAt: new Date(),
       updatedAt: new Date(),
     }).returning()
