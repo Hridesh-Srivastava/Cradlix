@@ -8,7 +8,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { CartProvider } from "@/components/providers/cart-provider"
 import { AuthErrorBoundary } from "@/components/auth/error-boundary"
-import { Header } from "@/components/layout/header"
+import { HeaderSwitcher } from "@/components/layout/header-switcher"
 import { Footer } from "@/components/layout/footer"
 import { Suspense } from "react"
 import "./globals.css"
@@ -71,7 +71,7 @@ export default function RootLayout({
               <CartProvider>
                 <Suspense fallback={null}>
                   <div className="relative flex min-h-screen flex-col">
-                    <Header />
+                    <HeaderSwitcher />
                     <main className="flex-1">{children}</main>
                     <Footer />
                   </div>

@@ -19,7 +19,8 @@
     "verify:auth": "tsx scripts/verify-auth-versions.ts",
     "db:migrate": "drizzle-kit push:pg",
     "db:migrate-new": "tsx scripts/migrate-new-tables.ts",
-    "db:generate": "drizzle-kit generate:pg"
+    "db:generate": "drizzle-kit generate:pg",
+    "db:create-addresses": "tsx scripts/create-user-addresses-table.ts"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",

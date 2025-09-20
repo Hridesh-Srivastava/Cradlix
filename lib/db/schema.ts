@@ -47,6 +47,29 @@ export const users = pgTable("user", {
   updatedAt: timestamp("updatedAt").defaultNow(),
 })
 
+// Addresses table (existing, legacy) used by Super Admin Profile
+// Note: This maps to the existing SQL schema created by setup scripts (addresses)
+export const addresses = pgTable("addresses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 20 }).default("shipping"), // shipping | billing
+  firstName: varchar("first_name", { length: 255 }).notNull(),
+  lastName: varchar("last_name", { length: 255 }).notNull(),
+  company: varchar("company", { length: 255 }),
+  addressLine1: varchar("address_line_1", { length: 255 }).notNull(),
+  addressLine2: varchar("address_line_2", { length: 255 }),
+  city: varchar("city", { length: 255 }).notNull(),
+  state: varchar("state", { length: 255 }).notNull(),
+  postalCode: varchar("postal_code", { length: 20 }).notNull(),
+  country: varchar("country", { length: 255 }).default("India"),
+  phone: varchar("phone", { length: 20 }),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("idx_addresses_user").on(table.userId),
+}))
+
 // Categories table
 export const categories = pgTable(
   "categories",
@@ -199,6 +222,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   wishlistItems: many(wishlistItems),
   accounts: many(accounts),
   sessions: many(sessions),
+  addresses: many(addresses),
 }))
 
 export const accountsRelations = relations(accounts, ({ one }) => ({

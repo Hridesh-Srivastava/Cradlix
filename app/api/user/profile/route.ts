@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@/lib/auth/config"
 import { authOptions } from '@/lib/auth/config'
 import { db } from '@/lib/db/postgres'
-import { users } from '@/lib/db/schema'
+import { users, addresses } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
@@ -43,26 +43,27 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Mock addresses for now - in real app, fetch from addresses table
-    const addresses = [
-      {
-        id: '1',
-        type: 'home' as const,
-        name: 'John Doe',
-        phone: '+1234567890',
-        address: '123 Main Street',
-        city: 'New York',
-        state: 'NY',
-        pincode: '10001',
-        isDefault: true,
-      },
-    ]
+    // Fetch addresses from DB (legacy schema) and map to UI shape
+    const rows = await db.select().from(addresses).where(eq(addresses.userId, user[0].id))
+    const mapped = rows.map((r: any) => ({
+      id: r.id,
+      type: r.type || 'home',
+      name: `${r.firstName} ${r.lastName}`.trim(),
+      phone: r.phone || '',
+      address: [r.addressLine1, r.addressLine2].filter(Boolean).join(', '),
+      city: r.city,
+      state: r.state,
+      pincode: r.postalCode,
+      isDefault: r.isDefault,
+      createdAt: r.createdAt,
+      updatedAt: r.updatedAt,
+    }))
 
     return NextResponse.json({
       success: true,
       profile: {
         ...user[0],
-        addresses,
+  addresses: mapped,
       },
     })
   } catch (error) {

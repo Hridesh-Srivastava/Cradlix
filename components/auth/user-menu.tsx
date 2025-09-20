@@ -1,6 +1,7 @@
 "use client"
 
 import { signOut } from "next-auth/react"
+import { usePathname } from "next/navigation"
 import { User, LogOut, Settings, ShoppingBag, Heart, Shield, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,6 +22,8 @@ interface UserMenuProps {
 
 export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter()
+  const pathname = usePathname()
+  const isSuperAdminPage = pathname?.startsWith("/super-admin")
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: "/" })
@@ -56,27 +59,33 @@ export function UserMenu({ user }: UserMenuProps) {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={() => router.push("/account/profile")}>
+        <DropdownMenuItem onClick={() => router.push(isSuperAdminPage ? "/super-admin/profile" : "/account/profile")}>
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => router.push("/account/orders")}>
-          <ShoppingBag className="mr-2 h-4 w-4" />
-          <span>My Orders</span>
-        </DropdownMenuItem>
+        {!isSuperAdminPage && (
+          <DropdownMenuItem onClick={() => router.push("/account/orders")}>
+            <ShoppingBag className="mr-2 h-4 w-4" />
+            <span>My Orders</span>
+          </DropdownMenuItem>
+        )}
 
-        <DropdownMenuItem onClick={() => router.push("/account/wishlist")}>
-          <Heart className="mr-2 h-4 w-4" />
-          <span>Wishlist</span>
-        </DropdownMenuItem>
+        {!isSuperAdminPage && (
+          <DropdownMenuItem onClick={() => router.push("/account/wishlist")}>
+            <Heart className="mr-2 h-4 w-4" />
+            <span>Wishlist</span>
+          </DropdownMenuItem>
+        )}
 
-        <DropdownMenuItem onClick={() => router.push("/settings")}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
-        </DropdownMenuItem>
+        {!isSuperAdminPage && (
+          <DropdownMenuItem onClick={() => router.push("/settings")}>
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </DropdownMenuItem>
+        )}
 
-        {(user.role === "admin" || user.role === "moderator" || user.role === "super-admin") && (
+        {(user.role === "admin" || user.role === "moderator" || user.role === "super-admin") && !isSuperAdminPage && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/admin")}>
