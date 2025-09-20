@@ -26,6 +26,12 @@ export function UserMenu({ user }: UserMenuProps) {
   const isSuperAdminPage = pathname?.startsWith("/super-admin")
 
   const handleSignOut = async () => {
+    try {
+      // Proactively clear the super-admin session marker (if present)
+      if (typeof document !== "undefined") {
+        document.cookie = `sa_browser_session=; Path=/; Max-Age=0; SameSite=Lax${location.protocol === "https:" ? "; Secure" : ""}`
+      }
+    } catch {}
     await signOut({ callbackUrl: "/" })
   }
 

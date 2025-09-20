@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, Calendar, Shield, Edit, Save, MapPin, Trash2, Camera, Cloud } from "lucide-react"
+import { Mail, Calendar, Edit, Save, MapPin, Trash2, Camera, Cloud, ArrowLeft } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
 
@@ -206,12 +206,15 @@ export function SuperAdminProfile() {
   return (
     <div className="container px-4 md:px-6 lg:px-8 py-6 space-y-8">
       {/* Top heading like the super admin dashboard, without header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-start gap-3">
+        <Button onClick={() => window.history.back()} className="bg-black hover:bg-black/90 text-white">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
         <div>
           <h1 className="text-3xl font-bold">Super Admin</h1>
           <p className="text-muted-foreground">Manage your account settings and preferences</p>
         </div>
-        <Button variant="outline" onClick={() => window.history.back()}>Back</Button>
       </div>
 
       {/* My Profile section (trimmed to only profile + personal info) */}
@@ -290,10 +293,6 @@ export function SuperAdminProfile() {
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Member since {new Date(profile.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{profile.emailVerified ? "Email verified" : "Email not verified"}</span>
                 </div>
               </CardContent>
             </Card>

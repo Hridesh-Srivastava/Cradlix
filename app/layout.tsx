@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/components/providers/auth-provider"
 import { CartProvider } from "@/components/providers/cart-provider"
+import { SuperAdminSessionMarker } from "@/components/providers/super-admin-session-marker"
+import { SuperAdminLogoutOnClose } from "@/components/providers/super-admin-logout-on-close"
 import { AuthErrorBoundary } from "@/components/auth/error-boundary"
 import { HeaderSwitcher } from "@/components/layout/header-switcher"
 import { Footer } from "@/components/layout/footer"
@@ -71,6 +73,10 @@ export default function RootLayout({
               <CartProvider>
                 <Suspense fallback={null}>
                   <div className="relative flex min-h-screen flex-col">
+                    {/* Sets a session-only cookie for super-admins while logged in */}
+                    <SuperAdminSessionMarker />
+                    {/* Sends a beacon to clear cookies when a super-admin closes the tab/window */}
+                    <SuperAdminLogoutOnClose />
                     <HeaderSwitcher />
                     <main className="flex-1">{children}</main>
                     <Footer />

@@ -35,34 +35,6 @@ export function SuperAdminDashboard() {
           <UsersManagement />
         </CardContent>
       </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Links</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <Link href="/admin/products">
-              <Button variant="outline" className="w-full justify-between">
-                Go to Products
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/admin/categories">
-              <Button variant="outline" className="w-full justify-between">
-                Manage Categories
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/admin/brands">
-              <Button variant="outline" className="w-full justify-between">
-                Manage Brands
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

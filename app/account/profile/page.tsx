@@ -15,7 +15,6 @@ import {
   User, 
   Mail, 
   Calendar, 
-  Shield, 
   Camera, 
   Save, 
   Trash2,
@@ -24,13 +23,26 @@ import {
   Edit,
   Cloud
 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { signOut } from 'next-auth/react'
 
 interface UserProfile {
   id: string
   name: string
   email: string
-  image: string
+  image: string | null
   role: string
   emailVerified: string
   createdAt: string
@@ -62,6 +74,19 @@ export default function ProfilePage() {
     name: '',
     email: '',
   })
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [addrForm, setAddrForm] = useState({
+    id: '',
+    type: 'home' as 'home' | 'work' | 'other',
+    name: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    isDefault: false,
+  })
+  const [addrLoading, setAddrLoading] = useState(false)
 
   useEffect(() => {
     if (session?.user) {
@@ -79,12 +104,61 @@ export default function ProfilePage() {
           name: data.profile.name,
           email: data.profile.email,
         })
+        // Also fetch addresses via dedicated endpoint for real-time refresh
+        try {
+          const ar = await fetch('/api/user/addresses')
+          if (ar.ok) {
+            const a = await ar.json()
+            setAddresses(a.addresses || [])
+          }
+        } catch {}
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  // Address CRUD helpers
+  const refreshAddresses = async () => {
+    try {
+      const ar = await fetch('/api/user/addresses')
+      if (ar.ok) {
+        const a = await ar.json()
+        setAddresses(a.addresses || [])
+      }
+    } catch {}
+  }
+
+  const saveAddress = async () => {
+    setAddrLoading(true)
+    try {
+      const payload = { ...addrForm }
+      if (payload.id) {
+        await fetch('/api/user/addresses', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      } else {
+        await fetch('/api/user/addresses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+      }
+      setAddrForm({ id: '', type: 'home', name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: false })
+      await refreshAddresses()
+    } finally {
+      setAddrLoading(false)
+    }
+  }
+
+  const editAddress = (a: Address) => setAddrForm({ ...a })
+  const deleteAddress = async (id: string) => {
+    await fetch(`/api/user/addresses?id=${id}`, { method: 'DELETE' })
+    await refreshAddresses()
   }
 
   const handleSaveProfile = async () => {
@@ -226,30 +300,17 @@ export default function ProfilePage() {
   }
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      return
-    }
-
     try {
-      const response = await fetch('/api/user/delete-account', {
-        method: 'DELETE',
-      })
-
+      const response = await fetch('/api/user/delete-account', { method: 'DELETE' })
       if (response.ok) {
-        toast({
-          title: 'Account deleted',
-          description: 'Your account has been deleted successfully.',
-        })
-        router.push('/')
+        toast({ title: 'Account deleted', description: 'Your account has been deleted successfully.' })
+        // Sign out to clear any client/session state, then go home
+        await signOut({ callbackUrl: '/' })
       } else {
         throw new Error('Failed to delete account')
       }
     } catch (error) {
-      toast({
-        title: 'Error deleting account',
-        description: 'Please try again later.',
-        variant: 'destructive',
-      })
+      toast({ title: 'Error deleting account', description: 'Please try again later.', variant: 'destructive' })
     }
   }
 
@@ -290,7 +351,7 @@ export default function ProfilePage() {
                 <div className="flex justify-center mb-4">
                   <div className="relative">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage src={profile.image} alt={profile.name} />
+                      <AvatarImage src={profile.image || ''} alt={profile.name} />
                       <AvatarFallback className="text-lg">
                         {profile.name.charAt(0).toUpperCase()}
                       </AvatarFallback>
@@ -312,7 +373,7 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                           <div className="text-center">
                             <Avatar className="h-20 w-20 mx-auto mb-4">
-                              <AvatarImage src={profile.image} alt={profile.name} />
+                              <AvatarImage src={profile.image || ''} alt={profile.name} />
                               <AvatarFallback>
                                 {profile.name.charAt(0).toUpperCase()}
                               </AvatarFallback>
@@ -380,12 +441,6 @@ export default function ProfilePage() {
                     Member since {new Date(profile.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {profile.emailVerified ? 'Email verified' : 'Email not verified'}
-                  </span>
-                </div>
               </CardContent>
             </Card>
           </div>
@@ -440,45 +495,82 @@ export default function ProfilePage() {
               </CardContent>
             </Card>
 
-            {/* Addresses */}
+            {/* Addresses - dynamic with CRUD */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Saved Addresses</CardTitle>
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAddrForm({ id: '', type: 'home', name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: false })}
+                  >
                     <MapPin className="h-4 w-4 mr-2" />
-                    Add Address
+                    Add / Edit Address
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
-                {profile.addresses && profile.addresses.length > 0 ? (
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="aname">Full Name</Label>
+                    <Input id="aname" value={addrForm.name} onChange={(e) => setAddrForm({ ...addrForm, name: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="aphone">Phone</Label>
+                    <Input id="aphone" value={addrForm.phone} onChange={(e) => setAddrForm({ ...addrForm, phone: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="aaddress">Address</Label>
+                    <Input id="aaddress" value={addrForm.address} onChange={(e) => setAddrForm({ ...addrForm, address: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="acity">City</Label>
+                    <Input id="acity" value={addrForm.city} onChange={(e) => setAddrForm({ ...addrForm, city: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="astate">State</Label>
+                    <Input id="astate" value={addrForm.state} onChange={(e) => setAddrForm({ ...addrForm, state: e.target.value })} />
+                  </div>
+                  <div>
+                    <Label htmlFor="apincode">Pincode</Label>
+                    <Input id="apincode" value={addrForm.pincode} onChange={(e) => setAddrForm({ ...addrForm, pincode: e.target.value })} />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch id="aisDefault" checked={addrForm.isDefault} onCheckedChange={(v) => setAddrForm({ ...addrForm, isDefault: v })} />
+                  <Label htmlFor="aisDefault">Set as default address</Label>
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={saveAddress} disabled={addrLoading}>{addrForm.id ? 'Update Address' : 'Add Address'}</Button>
+                  {addrForm.id && (
+                    <Button variant="destructive" onClick={async () => { await deleteAddress(addrForm.id); setAddrForm({ id: '', type: 'home', name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: false }) }}>Delete</Button>
+                  )}
+                </div>
+
+                {addresses && addresses.length > 0 ? (
                   <div className="space-y-4">
-                    {profile.addresses.map((address) => (
-                      <div key={address.id} className="border rounded-lg p-4">
+                    {addresses.map((a) => (
+                      <div key={a.id} className="border rounded-lg p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline">{address.type}</Badge>
-                            {address.isDefault && (
-                              <Badge variant="default">Default</Badge>
-                            )}
+                            {/* Type badge omitted for simplicity */}
+                            {a.isDefault && <span className="text-xs px-2 py-0.5 rounded bg-primary text-white">Default</span>}
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => editAddress(a)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => deleteAddress(a.id)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </div>
                         <div className="space-y-1 text-sm">
-                          <p className="font-medium">{address.name}</p>
-                          <p className="text-muted-foreground">{address.phone}</p>
-                          <p className="text-muted-foreground">{address.address}</p>
-                          <p className="text-muted-foreground">
-                            {address.city}, {address.state} - {address.pincode}
-                          </p>
+                          <p className="font-medium">{a.name}</p>
+                          <p className="text-muted-foreground">{a.phone}</p>
+                          <p className="text-muted-foreground">{a.address}</p>
+                          <p className="text-muted-foreground">{a.city}, {a.state} - {a.pincode}</p>
                         </div>
                       </div>
                     ))}
@@ -487,7 +579,7 @@ export default function ProfilePage() {
                   <div className="text-center py-8">
                     <MapPin className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                     <p className="text-muted-foreground">No saved addresses</p>
-                    <Button variant="outline" className="mt-4">
+                    <Button variant="outline" className="mt-4" onClick={() => setAddrForm({ id: '', type: 'home', name: '', phone: '', address: '', city: '', state: '', pincode: '', isDefault: false })}>
                       Add Your First Address
                     </Button>
                   </div>
@@ -508,13 +600,28 @@ export default function ProfilePage() {
                       Permanently delete your account and all associated data
                     </p>
                   </div>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDeleteAccount}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Account
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action permanently deletes your account and associated data. This cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 text-white hover:bg-red-600/90">
+                          Yes, delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </CardContent>
             </Card>

@@ -18,6 +18,61 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   })
 
+  // Super Admin fresh-session enforcement
+  // We use a session-lifetime marker cookie (no Expires) to detect new browser sessions.
+  // If a super-admin has a valid auth token but the session marker is missing,
+  // assume this is a fresh browser session and force re-authentication by clearing auth cookies.
+  const isSuperAdmin = !!token && (token.role as string) === "super-admin"
+  const hasSessionMarker = request.cookies.get("sa_browser_session")
+  if (isSuperAdmin && !hasSessionMarker) {
+    const loginUrl = new URL("/login", request.url)
+    // Preserve destination so after re-login they can be routed appropriately
+    if (pathname && pathname !== "/login") {
+      loginUrl.searchParams.set("callbackUrl", pathname)
+    }
+    const response = NextResponse.redirect(loginUrl)
+    // Set session-scoped marker (no expires -> cleared on browser close)
+    response.cookies.set("sa_browser_session", "1", {
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    })
+    // Proactively clear NextAuth cookies so the session is invalidated
+    response.cookies.set("next-auth.session-token", "", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      expires: new Date(0),
+    })
+    // Also clear the secure-prefixed cookie variant (used in HTTPS / production)
+    response.cookies.set("__Secure-next-auth.session-token", "", {
+      path: "/",
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      expires: new Date(0),
+    })
+    return response
+  }
+
+  // If super-admin is logged in and marker exists, ensure NextAuth cookie is session-scoped
+  if (isSuperAdmin && hasSessionMarker) {
+    const response = NextResponse.next()
+    const tokenValue = request.cookies.get("next-auth.session-token")?.value
+    if (tokenValue) {
+      response.cookies.set("next-auth.session-token", tokenValue, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        // no expires -> becomes a session cookie
+      } as any)
+      return response
+    }
+  }
+
   // Check if the current path is protected
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
   const isAdminRoot = pathname === "/admin"
