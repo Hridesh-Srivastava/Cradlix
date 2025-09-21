@@ -101,7 +101,7 @@ export function Header() {
                 <Link href="/login">Sign in</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/login">Sign up</Link>
+                <Link href="/register">Sign up</Link>
               </Button>
             </div>
           )}
@@ -140,7 +140,7 @@ export function Header() {
                     <Link href="/login" className="text-lg font-medium transition-colors hover:text-primary">
                       Sign In
                     </Link>
-                    <Link href="/login" className="text-lg font-medium transition-colors hover:text-primary">
+                    <Link href="/register" className="text-lg font-medium transition-colors hover:text-primary">
                       Sign Up
                     </Link>
                   </>

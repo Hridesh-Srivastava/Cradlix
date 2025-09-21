@@ -4,7 +4,7 @@ import { Suspense } from "react"
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth/config"
 import { authOptions } from "@/lib/auth/config"
-import { AccountSidebar } from "@/components/account/account-sidebar"
+// Removed sidebar to simplify account layout
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 
 export default async function AccountLayout({ children }: { children: React.ReactNode }) {
@@ -16,11 +16,8 @@ export default async function AccountLayout({ children }: { children: React.Reac
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-1">
-          <AccountSidebar />
-        </div>
-        <div className="lg:col-span-3">
+      <div className="grid grid-cols-1 gap-8">
+        <div className="col-span-1">
           <Suspense
             fallback={
               <div className="flex justify-center items-center h-64">

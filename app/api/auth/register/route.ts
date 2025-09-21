@@ -4,6 +4,9 @@ import { users } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { z } from 'zod'
+import { mailer } from '@/lib/email'
+import { renderWelcomeUserHtml, renderNewUserAdminHtml } from '@/lib/email'
+import { buildUsersWorkbookBuffer } from '@/lib/export/users-excel'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -39,6 +42,42 @@ export async function POST(request: NextRequest) {
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser[0]
+
+    // Send emails (non-blocking best-effort)
+    try {
+      const from = process.env.EMAIL_USER
+      const adminTo = process.env.EMAIL_TO || from
+      const excel = await buildUsersWorkbookBuffer()
+      if (from && userWithoutPassword.email) {
+        await mailer.sendMail({
+          from,
+          to: userWithoutPassword.email,
+          subject: 'Welcome to Baby Store',
+          html: renderWelcomeUserHtml(userWithoutPassword.name || ''),
+        })
+      }
+      if (from && adminTo) {
+        await mailer.sendMail({
+          from,
+          to: adminTo,
+          subject: `New user: ${userWithoutPassword.name || ''} <${userWithoutPassword.email}>`,
+          html: renderNewUserAdminHtml({
+            name: userWithoutPassword.name,
+            email: userWithoutPassword.email,
+            role: (userWithoutPassword as any).role || 'customer',
+          }),
+          attachments: [
+            {
+              filename: 'users.xlsx',
+              content: Buffer.from(excel),
+              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            },
+          ],
+        })
+      }
+    } catch (e) {
+      console.warn('Welcome/admin email failed:', e)
+    }
 
     return NextResponse.json({
       success: true,

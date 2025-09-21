@@ -45,6 +45,17 @@ export function UserMenu({ user }: UserMenuProps) {
     }
   }, [update])
 
+  // Listen for profile updates (name/email)
+  useEffect(() => {
+    const handleProfileUpdated = (event: CustomEvent) => {
+      const { name, email } = event.detail || {}
+      setCurrentUser(prev => ({ ...prev, name: name ?? prev.name, email: email ?? prev.email }))
+      update()
+    }
+    window.addEventListener('profileUpdated', handleProfileUpdated as EventListener)
+    return () => window.removeEventListener('profileUpdated', handleProfileUpdated as EventListener)
+  }, [update])
+
   // Update current user when session changes
   useEffect(() => {
     if (session?.user) {

@@ -7,6 +7,9 @@ import { db } from "@/lib/db/postgres"
 import { users } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 import bcrypt from "bcryptjs"
+import { mailer, renderWelcomeUserHtml, renderNewUserAdminHtml } from "@/lib/email"
+import { buildUsersWorkbookBuffer } from "@/lib/export/users-excel"
+import { syncGoogleAvatarToCloudinary } from "@/lib/auth/sync-google-avatar"
 
 // NextAuth v4 configuration
 export const authOptions: NextAuthOptions = {
@@ -140,7 +143,24 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "google") {
   // email_verified is provider-specific; use a safe cast
   const emailVerified = (profile as any)?.email_verified
-  return !!(profile?.email && emailVerified)
+  const ok = !!(profile?.email && emailVerified)
+  // Fire-and-forget: if the avatar is a Google URL, sync it to Cloudinary
+  try {
+    if (ok && user?.id && user?.image && typeof user.image === 'string') {
+      try {
+        // Fetch latest DB value to avoid racing with createUser event
+        const dbUser = await db.select().from(users).where(eq(users.id, user.id as string)).limit(1)
+        const dbImage = dbUser[0]?.image as string | null | undefined
+        const alreadyCloudinary = !!dbImage && typeof dbImage === 'string' && dbImage.includes('cloudinary.com')
+        const isGoogle = typeof user.image === 'string' && user.image.includes('googleusercontent.com')
+        if (!alreadyCloudinary && isGoogle) {
+          // Fire-and-forget; no await
+          syncGoogleAvatarToCloudinary(user.id as string, user.image as string)
+        }
+      } catch {}
+    }
+  } catch {}
+  return ok
       }
       return true
     },
@@ -171,6 +191,49 @@ export const authOptions: NextAuthOptions = {
         maxAge: 7 * 24 * 60 * 60, // 7 days
       }
     }
+  },
+  events: {
+    async createUser({ user }) {
+      try {
+        // Attempt a sync if the provider image is a Google URL
+        try {
+          if (user?.id && user?.image && typeof user.image === 'string') {
+            await syncGoogleAvatarToCloudinary(user.id as string, user.image as string)
+          }
+        } catch {}
+
+        const from = process.env.EMAIL_USER
+        const adminTo = process.env.EMAIL_TO || from
+        const excel = await buildUsersWorkbookBuffer()
+        if (from && user?.email) {
+          await mailer.sendMail({
+            from,
+            to: user.email,
+            subject: "Welcome to Baby Store",
+            html: renderWelcomeUserHtml(user.name || ""),
+          })
+        }
+        if (from && adminTo && user?.email) {
+          await mailer.sendMail({
+            from,
+            to: adminTo,
+            subject: `New user: ${user.name || ""} <${user.email}>`,
+            html: renderNewUserAdminHtml({ name: user.name || null, email: user.email, role: (user as any).role || "customer" }),
+            attachments: [
+              {
+                filename: "users.xlsx",
+                content: Buffer.from(excel),
+                contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              },
+            ],
+          })
+        }
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production") {
+          console.warn("createUser event email failed:", e)
+        }
+      }
+    },
   },
 }
 

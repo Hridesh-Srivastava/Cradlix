@@ -182,6 +182,14 @@ export default function ProfilePage() {
         })
         // Update session
         await update()
+
+        // Dispatch profile updated event for real-time header sync
+        try {
+          const evt = new CustomEvent('profileUpdated', {
+            detail: { name: data.profile.name, email: data.profile.email },
+          })
+          window.dispatchEvent(evt)
+        } catch {}
       } else {
         throw new Error('Failed to update profile')
       }

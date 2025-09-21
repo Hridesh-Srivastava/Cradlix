@@ -81,6 +81,7 @@
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.5",
     "embla-carousel-react": "8.5.1",
+    "exceljs": "^4.4.0",
     "gcp-metadata": "latest",
     "geist": "latest",
     "gel": "latest",
@@ -112,6 +113,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
     "@types/node": "^22.18.1",
+    "@types/nodemailer": "^7.0.1",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "postcss": "^8.5.6",

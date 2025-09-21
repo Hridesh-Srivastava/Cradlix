@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export default function ContactPage() {
   const { toast } = useToast()
@@ -18,6 +19,7 @@ export default function ContactPage() {
     subject: '',
     message: '',
   })
+  const [sent, setSent] = useState<null | { name: string }>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -31,20 +33,32 @@ export default function ContactPage() {
     setLoading(true)
 
     try {
-      // In a real app, you'd send this to your API
-      // For now, we'll just show a success message
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
+      if (!/.+@.+\..+/.test(formData.email)) {
+        throw new Error('Please enter a valid email address.')
+      }
+
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || `Failed (${res.status})`)
+      }
+
       toast({
         title: 'Message sent successfully!',
-        description: 'We\'ll get back to you within 24 hours.',
+        description: "We'll get back to you within 24 hours.",
       })
-      
-      setFormData({ name: '', email: '', subject: '', message: '' })
+
+  setFormData({ name: '', email: '', subject: '', message: '' })
+  setSent({ name: formData.name })
     } catch (error) {
       toast({
         title: 'Error sending message',
-        description: 'Please try again later.',
+        description: error instanceof Error ? error.message : 'Please try again later.',
         variant: 'destructive',
       })
     } finally {
@@ -61,6 +75,18 @@ export default function ContactPage() {
             We'd love to hear from you. Send us a message and we'll respond as soon as possible.
           </p>
         </div>
+
+        {sent && (
+          <div className="mb-8">
+            <Alert className="border-emerald-200/60 bg-emerald-50/60 text-emerald-800">
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertTitle>Thank you{sent.name ? `, ${sent.name}` : ''}!</AlertTitle>
+              <AlertDescription>
+                Your message has been sent. We’ll get back to you within 24 hours.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Contact Form */}
