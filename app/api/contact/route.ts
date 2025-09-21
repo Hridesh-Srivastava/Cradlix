@@ -4,29 +4,41 @@ import { auth } from "@/lib/auth/config"
 import { mailer, renderAdminContactHtml, renderUserThankYouHtml } from "@/lib/email"
 import ExcelJS from "exceljs"
 import { verifyRecaptcha } from "@/lib/security/recaptcha"
+import { getClientIp } from "@/lib/security/ip"
+import { rateLimit, rateLimitHeaders } from "@/lib/security/rate-limit"
 
 export async function POST(req: Request) {
   try {
+    // Rate limit per IP: 10 requests per 10 minutes
+    const ip = getClientIp(req)
+    const rl = await rateLimit({ prefix: 'contact', key: ip || 'unknown' }, { limit: 10, windowSec: 600 })
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many contact submissions. Please try again later.' },
+        { status: 429, headers: rateLimitHeaders(rl) }
+      )
+    }
+
     const session = await auth().catch(() => null)
   const body = await req.json().catch(() => ({}))
   const { name, email, subject, message, captchaToken } = body || {}
     // Verify captcha
     const check = await verifyRecaptcha(captchaToken, 'contact')
     if (!check.success || (typeof check.score === 'number' && check.score < 0.5)) {
-      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400 })
+      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400, headers: rateLimitHeaders(rl) })
     }
 
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Missing required fields: name, email, message" },
-        { status: 400 },
+        { status: 400, headers: rateLimitHeaders(rl) },
       )
     }
 
     // Basic email validation
     const emailOk = /.+@.+\..+/.test(email)
     if (!emailOk) {
-      return NextResponse.json({ error: "Invalid email address" }, { status: 400 })
+      return NextResponse.json({ error: "Invalid email address" }, { status: 400, headers: rateLimitHeaders(rl) })
     }
 
     await connectMongoDB()
@@ -104,7 +116,7 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json({ ok: true, id: saved._id?.toString?.() }, { status: 201 })
+    return NextResponse.json({ ok: true, id: saved._id?.toString?.() }, { status: 201, headers: rateLimitHeaders(rl) })
   } catch (error: any) {
     return NextResponse.json({ error: error?.message || "Failed to submit" }, { status: 500 })
   }

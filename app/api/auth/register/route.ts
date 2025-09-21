@@ -8,6 +8,8 @@ import { mailer } from '@/lib/email'
 import { renderWelcomeUserHtml, renderNewUserAdminHtml } from '@/lib/email'
 import { buildUsersWorkbookBuffer } from '@/lib/export/users-excel'
 import { verifyRecaptcha } from '@/lib/security/recaptcha'
+import { getClientIp } from '@/lib/security/ip'
+import { rateLimit, rateLimitHeaders } from '@/lib/security/rate-limit'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -17,6 +19,16 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit per IP: 5 requests per 5 minutes
+    const ip = getClientIp(request as unknown as Request)
+    const rl = await rateLimit({ prefix: 'register', key: ip || 'unknown' }, { limit: 5, windowSec: 300 })
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Too many registration attempts. Please try again later.' },
+        { status: 429, headers: rateLimitHeaders(rl) }
+      )
+    }
+
     const body = await request.json()
     const { captchaToken, ...rest } = body || {}
     const { name, email, password } = registerSchema.parse(rest)
@@ -24,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Verify reCAPTCHA for plain sign-up
     const result = await verifyRecaptcha(captchaToken, 'register')
     if (!result.success || (typeof result.score === 'number' && result.score < 0.5)) {
-      return NextResponse.json({ error: 'Captcha verification failed' }, { status: 400 })
+      return NextResponse.json({ error: 'Captcha verification failed' }, { status: 400, headers: rateLimitHeaders(rl) })
     }
 
     // Check if user already exists
@@ -33,7 +45,7 @@ export async function POST(request: NextRequest) {
     if (existingUser[0]) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
-        { status: 400 }
+        { status: 400, headers: rateLimitHeaders(rl) }
       )
     }
 
@@ -91,7 +103,7 @@ export async function POST(request: NextRequest) {
       success: true,
       user: userWithoutPassword,
       message: 'User registered successfully'
-    })
+    }, { headers: rateLimitHeaders(rl) })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

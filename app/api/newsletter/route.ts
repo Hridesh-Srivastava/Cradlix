@@ -3,6 +3,8 @@ import { connectMongoDB, Newsletter } from "@/lib/db/mongodb"
 import { mailer } from "@/lib/email"
 import ExcelJS from "exceljs"
 import { verifyRecaptcha } from "@/lib/security/recaptcha"
+import { getClientIp } from "@/lib/security/ip"
+import { rateLimit, rateLimitHeaders } from "@/lib/security/rate-limit"
 
 function isValidEmail(email: string) {
   return /[^@\s]+@[^@\s]+\.[^@\s]+/.test(email)
@@ -31,6 +33,15 @@ async function buildNewsletterWorkbookBuffer() {
 
 export async function POST(req: Request) {
   try {
+    // Rate limit per IP: 20 requests per hour
+    const ip = getClientIp(req)
+    const rl = await rateLimit({ prefix: 'newsletter', key: ip || 'unknown' }, { limit: 20, windowSec: 3600 })
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: "Too many subscribe attempts. Please try again later." },
+        { status: 429, headers: rateLimitHeaders(rl) }
+      )
+    }
     await connectMongoDB()
     const body = await req.json().catch(() => ({}))
     const email = (body?.email || "").trim().toLowerCase()
@@ -38,10 +49,10 @@ export async function POST(req: Request) {
     const captchaToken = body?.captchaToken as string | undefined
     const verify = await verifyRecaptcha(captchaToken, 'newsletter')
     if (!verify.success || (typeof verify.score === 'number' && verify.score < 0.5)) {
-      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400 })
+      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400, headers: rateLimitHeaders(rl) })
     }
     if (!email || !isValidEmail(email)) {
-      return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 })
+      return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400, headers: rateLimitHeaders(rl) })
     }
 
     const ipAddress = (req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "").split(",")[0]?.trim() || null
@@ -107,7 +118,7 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true }, { headers: rateLimitHeaders(rl) })
   } catch (error) {
     console.error("Newsletter subscribe error:", error)
     return NextResponse.json({ error: "Unable to subscribe right now. Please try again later." }, { status: 500 })
