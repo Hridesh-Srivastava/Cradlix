@@ -24,7 +24,13 @@ export async function middleware(request: NextRequest) {
   // assume this is a fresh browser session and force re-authentication by clearing auth cookies.
   const isSuperAdmin = !!token && (token.role as string) === "super-admin"
   const hasSessionMarker = request.cookies.get("sa_browser_session")
-  if (isSuperAdmin && !hasSessionMarker) {
+  
+  // Only enforce session marker for super admin if they're trying to access protected routes
+  // This prevents redirecting during login process
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
+  const isLoginPage = pathname.startsWith("/login")
+  
+  if (isSuperAdmin && !hasSessionMarker && isProtectedRoute && !isLoginPage) {
     const loginUrl = new URL("/login", request.url)
     // Preserve destination so after re-login they can be routed appropriately
     if (pathname && pathname !== "/login") {
@@ -73,8 +79,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Check if the current path is protected
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
+  // Check if the current path is protected (already defined above)
   const isAdminRoot = pathname === "/admin"
   const isAdminSection = pathname.startsWith("/admin/")
   const isSuperAdminRoot = pathname === "/super-admin"

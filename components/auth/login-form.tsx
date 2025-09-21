@@ -54,6 +54,8 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
       }
 
       // Check if sign in was successful
+      // Add a small delay to ensure session is properly established
+      await new Promise(resolve => setTimeout(resolve, 100))
       const session = await getSession()
       if (session) {
         setFormError(null)
@@ -69,6 +71,28 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
         toast({ title: "Welcome back!", description: "You have been successfully signed in." })
         router.push(destination)
         router.refresh()
+      } else {
+        // If no session after successful signIn, try one more time
+        await new Promise(resolve => setTimeout(resolve, 200))
+        const retrySession = await getSession()
+        if (retrySession) {
+          setFormError(null)
+          const role = (retrySession.user as any)?.role
+          const hasCb = !!callbackUrl && callbackUrl !== '/' && callbackUrl !== '/login'
+          const destination = hasCb
+            ? (callbackUrl as string)
+            : role === 'super-admin'
+              ? '/super-admin'
+              : role === 'admin'
+                ? '/admin'
+                : '/'
+          toast({ title: "Welcome back!", description: "You have been successfully signed in." })
+          router.push(destination)
+          router.refresh()
+        } else {
+          setFormError("Session not established. Please try again.")
+          toast({ title: "Sign in failed", description: "Session not established. Please try again.", variant: "destructive" })
+        }
       }
     } catch (error) {
       toast({
