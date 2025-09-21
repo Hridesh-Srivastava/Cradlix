@@ -1,7 +1,10 @@
+"use client"
+
 import Link from "next/link"
 import { Baby, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useState } from "react"
 
 const footerLinks = {
   company: [
@@ -31,6 +34,38 @@ const footerLinks = {
 }
 
 export function Footer() {
+  const [email, setEmail] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const subscribe = async () => {
+    setError(null)
+    setSuccess(null)
+    const isValid = /[^@\s]+@[^@\s]+\.[^@\s]+/.test(email)
+    if (!isValid) {
+      setError("Please enter a valid email")
+      return
+    }
+    try {
+      setLoading(true)
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "footer" })
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Subscription failed")
+      }
+      setSuccess(`Thanks for subscribing to our newsletter!`)
+      setEmail("")
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Subscription failed")
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <footer className="bg-muted/50 border-t">
       <div className="container py-12">
@@ -112,10 +147,20 @@ export function Footer() {
               <p className="text-muted-foreground">Get the latest updates on new products and exclusive offers.</p>
             </div>
             <div className="flex w-full max-w-sm space-x-2">
-              <Input placeholder="Enter your email" type="email" />
-              <Button>Subscribe</Button>
+              <Input placeholder="Enter your email" type="email" value={email} onChange={(e)=>setEmail(e.target.value)} onKeyDown={(e)=>{ if(e.key==='Enter'){ e.preventDefault(); subscribe(); }}} />
+              <Button onClick={subscribe} disabled={loading}>{loading? '...' : 'Subscribe'}</Button>
             </div>
           </div>
+          {success && (
+            <div className="mt-4 rounded-md bg-green-500/10 border border-green-600/30 text-green-800 px-4 py-3">
+              {success}
+            </div>
+          )}
+          {error && (
+            <div className="mt-4 rounded-md bg-red-500/10 border border-red-600/30 text-red-800 px-4 py-3">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Bottom Section */}
