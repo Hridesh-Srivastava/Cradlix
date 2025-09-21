@@ -3,12 +3,18 @@ import { saveContactForm, connectMongoDB, ContactForm } from "@/lib/db/mongodb"
 import { auth } from "@/lib/auth/config"
 import { mailer, renderAdminContactHtml, renderUserThankYouHtml } from "@/lib/email"
 import ExcelJS from "exceljs"
+import { verifyRecaptcha } from "@/lib/security/recaptcha"
 
 export async function POST(req: Request) {
   try {
     const session = await auth().catch(() => null)
-    const body = await req.json().catch(() => ({}))
-    const { name, email, subject, message } = body || {}
+  const body = await req.json().catch(() => ({}))
+  const { name, email, subject, message, captchaToken } = body || {}
+    // Verify captcha
+    const check = await verifyRecaptcha(captchaToken, 'contact')
+    if (!check.success || (typeof check.score === 'number' && check.score < 0.5)) {
+      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400 })
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json(

@@ -5,6 +5,7 @@ import { Baby, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { useRecaptcha } from "@/hooks/use-recaptcha"
 
 const footerLinks = {
   company: [
@@ -38,6 +39,7 @@ export function Footer() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { execute: recaptcha } = useRecaptcha()
 
   const subscribe = async () => {
     setError(null)
@@ -49,10 +51,11 @@ export function Footer() {
     }
     try {
       setLoading(true)
+      const captcha = await recaptcha?.('newsletter').catch(() => null)
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, source: "footer" })
+        body: JSON.stringify({ email, source: "footer", captchaToken: captcha || null })
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { connectMongoDB, Newsletter } from "@/lib/db/mongodb"
 import { mailer } from "@/lib/email"
 import ExcelJS from "exceljs"
+import { verifyRecaptcha } from "@/lib/security/recaptcha"
 
 function isValidEmail(email: string) {
   return /[^@\s]+@[^@\s]+\.[^@\s]+/.test(email)
@@ -34,6 +35,11 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}))
     const email = (body?.email || "").trim().toLowerCase()
     const source = (body?.source || "footer") as string
+    const captchaToken = body?.captchaToken as string | undefined
+    const verify = await verifyRecaptcha(captchaToken, 'newsletter')
+    if (!verify.success || (typeof verify.score === 'number' && verify.score < 0.5)) {
+      return NextResponse.json({ error: "Captcha verification failed" }, { status: 400 })
+    }
     if (!email || !isValidEmail(email)) {
       return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 })
     }

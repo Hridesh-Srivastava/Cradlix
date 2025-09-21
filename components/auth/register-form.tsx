@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Separator } from "@/components/ui/separator"
 import Link from "next/link"
 import { signIn } from "next-auth/react"
+import { useRecaptcha } from "@/hooks/use-recaptcha"
 
 interface RegisterFormProps {
   callbackUrl?: string
@@ -28,6 +29,7 @@ export function RegisterForm({ callbackUrl = "/" }: RegisterFormProps) {
   })
   const router = useRouter()
   const { toast } = useToast()
+  const { execute: recaptcha } = useRecaptcha()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -69,6 +71,9 @@ export function RegisterForm({ callbackUrl = "/" }: RegisterFormProps) {
     try {
       setIsLoading(true)
       
+      // Get a reCAPTCHA token for plain sign-up
+      const captcha = await recaptcha?.('register').catch(() => null)
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -78,6 +83,7 @@ export function RegisterForm({ callbackUrl = "/" }: RegisterFormProps) {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          captchaToken: captcha || null,
         }),
       })
 

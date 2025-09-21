@@ -9,9 +9,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { useRecaptcha } from '@/hooks/use-recaptcha'
 
 export default function ContactPage() {
   const { toast } = useToast()
+  const { execute: recaptcha } = useRecaptcha()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
@@ -37,10 +39,11 @@ export default function ContactPage() {
         throw new Error('Please enter a valid email address.')
       }
 
+      const captcha = await recaptcha?.('contact').catch(() => null)
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, captchaToken: captcha || null }),
       })
 
       if (!res.ok) {

@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { mailer } from '@/lib/email'
 import { renderWelcomeUserHtml, renderNewUserAdminHtml } from '@/lib/email'
 import { buildUsersWorkbookBuffer } from '@/lib/export/users-excel'
+import { verifyRecaptcha } from '@/lib/security/recaptcha'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -17,7 +18,14 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, password } = registerSchema.parse(body)
+    const { captchaToken, ...rest } = body || {}
+    const { name, email, password } = registerSchema.parse(rest)
+
+    // Verify reCAPTCHA for plain sign-up
+    const result = await verifyRecaptcha(captchaToken, 'register')
+    if (!result.success || (typeof result.score === 'number' && result.score < 0.5)) {
+      return NextResponse.json({ error: 'Captcha verification failed' }, { status: 400 })
+    }
 
     // Check if user already exists
     const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1)
