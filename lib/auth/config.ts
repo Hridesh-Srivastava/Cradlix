@@ -113,24 +113,43 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string
         session.user.role = token.role as string
     ;(session.user as any).status = (token as any).status || 'approved'
+        // Propagate avatar and basic fields from token
+        if ((token as any).picture) {
+          session.user.image = (token as any).picture as string
+        }
+        if (token.name) session.user.name = token.name
+        if (token.email) session.user.email = token.email
       }
       return session
     },
-  async jwt({ user, token, account }) {
+  async jwt({ user, token, account, profile, trigger, session: sessionUpdate }) {
       if (user) {
         token.id = user.id
         token.role = (user as any).role || "customer"
     ;(token as any).status = (user as any).status || 'approved'
+        // Carry over initial image/name/email when available
+        if ((user as any).image) (token as any).picture = (user as any).image
+        if (user.name) token.name = user.name
+        if (user.email) token.email = user.email
       }
       
-      // For OAuth users, fetch role from database
-      if (account?.provider === "google" && token?.email) {
+      // Refresh fields from DB when needed (on Google sign-in or when explicitly updated)
+      if ((account?.provider === "google" && token?.email) || trigger === 'update' || !(token as any).picture) {
         try {
-          const dbUser = await db.select().from(users).where(eq(users.email, token.email as string)).limit(1)
+          if (!token.email && typeof user?.email === 'string') {
+            token.email = user.email
+          }
+          const emailForLookup = token.email as string | undefined
+          if (!emailForLookup) {
+            return token
+          }
+          const dbUser = await db.select().from(users).where(eq(users.email, emailForLookup)).limit(1)
           if (dbUser[0]) {
             token.role = dbUser[0].role || "customer"
             token.id = dbUser[0].id
       ;(token as any).status = (dbUser[0] as any).status || 'approved'
+            if (dbUser[0].image) (token as any).picture = dbUser[0].image
+            if (dbUser[0].name) token.name = dbUser[0].name || token.name
           }
         } catch (error) {
           console.error("Error fetching user role:", error)
@@ -154,8 +173,8 @@ export const authOptions: NextAuthOptions = {
         const alreadyCloudinary = !!dbImage && typeof dbImage === 'string' && dbImage.includes('cloudinary.com')
         const isGoogle = typeof user.image === 'string' && user.image.includes('googleusercontent.com')
         if (!alreadyCloudinary && isGoogle) {
-          // Fire-and-forget; no await
-          syncGoogleAvatarToCloudinary(user.id as string, user.image as string)
+          // Ensure sync completes before JWT is minted so session gets Cloudinary URL immediately
+          await syncGoogleAvatarToCloudinary(user.id as string, user.image as string)
         }
       } catch {}
     }

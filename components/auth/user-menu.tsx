@@ -27,6 +27,7 @@ export function UserMenu({ user }: UserMenuProps) {
   const isSuperAdminPage = pathname?.startsWith("/super-admin")
   const { data: session, update } = useSession()
   const [currentUser, setCurrentUser] = useState<ExtendedUser>(user)
+  const [version, setVersion] = useState<number>(0)
 
   // Listen for avatar updates
   useEffect(() => {
@@ -34,6 +35,7 @@ export function UserMenu({ user }: UserMenuProps) {
       console.log('UserMenu received avatar update event:', event.detail)
       const { avatarUrl } = event.detail
       setCurrentUser(prev => ({ ...prev, image: avatarUrl }))
+      setVersion(v => v + 1)
       // Also update the session
       update()
     }
@@ -60,6 +62,7 @@ export function UserMenu({ user }: UserMenuProps) {
   useEffect(() => {
     if (session?.user) {
       setCurrentUser(session.user as ExtendedUser)
+      setVersion(v => v + 1)
     }
   }, [session])
 
@@ -93,7 +96,7 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={currentUser.image || ""} alt={currentUser.name || ""} />
+            <AvatarImage src={currentUser.image ? `${currentUser.image}${currentUser.image.includes('?') ? '&' : '?'}v=${version}` : ""} alt={currentUser.name || ""} />
             <AvatarFallback>{getInitials(currentUser.name || "U")}</AvatarFallback>
           </Avatar>
         </Button>
