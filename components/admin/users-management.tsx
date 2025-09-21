@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -29,25 +29,46 @@ export function UsersManagement() {
   const [search, setSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const activeRequest = useRef<AbortController | null>(null)
 
-  const load = async () => {
+  const load = async (q: string) => {
     try {
       setLoading(true)
       const params = new URLSearchParams()
-      if (search.trim()) params.set('search', search.trim())
-      const res = await fetch(`/api/admin/users?${params.toString()}`)
+      const query = q.trim()
+      if (query) params.set('search', query)
+
+      // Cancel any in-flight request to avoid stale results
+      activeRequest.current?.abort()
+      const controller = new AbortController()
+      activeRequest.current = controller
+
+      const res = await fetch(`/api/admin/users?${params.toString()}`,{ signal: controller.signal })
       if (!res.ok) throw new Error(res.status === 401 ? 'Unauthorized' : `Failed (${res.status})`)
       const j = await res.json()
       setUsers(j.users || [])
     } catch (e: any) {
+      if (e?.name === 'AbortError') return
       toast({ title: 'Load failed', description: e.message, variant: 'destructive' })
     } finally {
       setLoading(false)
     }
   }
 
-  useEffect(() => { load() // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Initial load
+  useEffect(() => {
+    load("")
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Debounced realtime search
+  useEffect(() => {
+    const t = setTimeout(() => {
+      load(search)
+    }, 400)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search])
 
   const doUpdate = async (id: string, role: string) => {
     try {
@@ -73,7 +94,6 @@ export function UsersManagement() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Input placeholder="Search users by name/email" value={search} onChange={(e) => setSearch(e.target.value)} />
-        <Button onClick={load}>Search</Button>
       </div>
       <div className="rounded-md border">
         <Table>
@@ -104,9 +124,7 @@ export function UsersManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => doUpdate(u.id, 'moderator')}>Approve as Moderator</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => doUpdate(u.id, 'admin')}>Promote to Admin</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => doUpdate(u.id, 'super-admin')}>Make Super Admin</DropdownMenuItem>
                         <DropdownMenuItem onClick={() => doReject(u.id)} className="text-destructive">Reject (Back to Customer)</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

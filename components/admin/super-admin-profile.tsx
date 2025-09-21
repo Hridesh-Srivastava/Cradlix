@@ -59,18 +59,36 @@ export function SuperAdminProfile() {
   })
   const [addrLoading, setAddrLoading] = useState(false)
 
+  // Simple, robust session handling
   useEffect(() => {
-    if (session?.user) fetchProfile()
+    if (session?.user) {
+      fetchProfile()
+    } else {
+      setLoading(false)
+    }
   }, [session])
 
   const fetchProfile = async () => {
     try {
+      setLoading(true)
+      
       const res = await fetch("/api/user/profile")
+      
       if (res.ok) {
         const data = await res.json()
-        setProfile(data.profile)
-        setFormData({ name: data.profile.name, email: data.profile.email })
+        if (data.profile) {
+          setProfile(data.profile)
+          setFormData({ name: data.profile.name, email: data.profile.email })
+        }
+      } else {
+        console.error('Failed to fetch profile:', res.status)
+        toast({ 
+          title: "Error", 
+          description: "Failed to load profile data", 
+          variant: "destructive" 
+        })
       }
+      
       // fetch addresses
       const ar = await fetch("/api/user/addresses")
       if (ar.ok) {
@@ -78,7 +96,12 @@ export function SuperAdminProfile() {
         setAddresses(a.addresses || [])
       }
     } catch (e) {
-      // noop
+      console.error('Profile fetch error:', e)
+      toast({ 
+        title: "Error", 
+        description: "Failed to load profile data", 
+        variant: "destructive" 
+      })
     } finally {
       setLoading(false)
     }
@@ -111,15 +134,40 @@ export function SuperAdminProfile() {
       setAvatarUploading(true)
       const fd = new FormData()
       fd.append("avatar", file)
-      const res = await fetch("/api/user/avatar", { method: "POST", body: fd })
+      
+      const res = await fetch("/api/user/avatar", { 
+        method: "POST", 
+        body: fd,
+        credentials: 'include' // Ensure cookies are sent
+      })
+      
       if (res.ok) {
         const data = await res.json()
         setProfile((prev) => (prev ? { ...prev, image: data.avatarUrl } : prev))
         toast({ title: "Avatar updated successfully" })
+        // Force session update to sync avatar across all components
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: data.avatarUrl } 
+        })
+        window.dispatchEvent(event)
       } else {
-        toast({ title: "Failed to upload avatar", variant: "destructive" })
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        toast({ 
+          title: "Failed to upload avatar", 
+          description: errorData.error || 'Please try again',
+          variant: "destructive" 
+        })
       }
+    } catch (error) {
+      console.error('Avatar upload error:', error)
+      toast({ 
+        title: "Upload failed", 
+        description: "Network error. Please check your connection and try again.",
+        variant: "destructive" 
+      })
     } finally {
       setAvatarUploading(false)
     }
@@ -128,13 +176,36 @@ export function SuperAdminProfile() {
   const handleSyncGoogleAvatar = async () => {
     try {
       setAvatarUploading(true)
-      const res = await fetch("/api/user/avatar/sync-google", { method: "POST" })
+      const res = await fetch("/api/user/avatar/sync-google", { 
+        method: "POST",
+        credentials: 'include' // Ensure cookies are sent
+      })
       if (res.ok) {
         const data = await res.json()
         setProfile((prev) => (prev ? { ...prev, image: data.avatarUrl } : prev))
         toast({ title: "Google avatar synced to Cloudinary" })
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: data.avatarUrl } 
+        })
+        window.dispatchEvent(event)
+      } else {
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        toast({ 
+          title: "Failed to sync Google avatar", 
+          description: errorData.error || 'Please try again',
+          variant: "destructive" 
+        })
       }
+    } catch (error) {
+      console.error('Google avatar sync error:', error)
+      toast({ 
+        title: "Sync failed", 
+        description: "Network error. Please check your connection and try again.",
+        variant: "destructive" 
+      })
     } finally {
       setAvatarUploading(false)
     }
@@ -143,12 +214,35 @@ export function SuperAdminProfile() {
   const handleDeleteAvatar = async () => {
     try {
       setAvatarUploading(true)
-      const res = await fetch("/api/user/avatar", { method: "DELETE" })
+      const res = await fetch("/api/user/avatar", { 
+        method: "DELETE",
+        credentials: 'include' // Ensure cookies are sent
+      })
       if (res.ok) {
         setProfile((prev) => (prev ? { ...prev, image: null as any } : prev))
         toast({ title: "Avatar deleted" })
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: null } 
+        })
+        window.dispatchEvent(event)
+      } else {
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }))
+        toast({ 
+          title: "Failed to delete avatar", 
+          description: errorData.error || 'Please try again',
+          variant: "destructive" 
+        })
       }
+    } catch (error) {
+      console.error('Avatar delete error:', error)
+      toast({ 
+        title: "Delete failed", 
+        description: "Network error. Please check your connection and try again.",
+        variant: "destructive" 
+      })
     } finally {
       setAvatarUploading(false)
     }
@@ -195,7 +289,7 @@ export function SuperAdminProfile() {
     )
   }
 
-  if (!profile) {
+  if (!profile && !loading) {
     return (
       <div className="container py-8">
         <p className="text-center text-muted-foreground">Profile not found.</p>

@@ -205,6 +205,7 @@ export default function ProfilePage() {
       const response = await fetch('/api/user/avatar', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Ensure cookies are sent
       })
 
       if (response.ok) {
@@ -216,6 +217,12 @@ export default function ProfilePage() {
         })
         // Update session
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: data.avatarUrl } 
+        })
+        window.dispatchEvent(event)
       } else {
         throw new Error('Failed to upload avatar')
       }
@@ -246,6 +253,12 @@ export default function ProfilePage() {
         })
         // Update session
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: data.avatarUrl } 
+        })
+        window.dispatchEvent(event)
       } else {
         const error = await response.json()
         toast({
@@ -280,6 +293,12 @@ export default function ProfilePage() {
         })
         // Update session
         await update()
+        
+        // Dispatch custom event for real-time avatar sync
+        const event = new CustomEvent('avatarUpdated', { 
+          detail: { avatarUrl: null } 
+        })
+        window.dispatchEvent(event)
       } else {
         const error = await response.json()
         toast({

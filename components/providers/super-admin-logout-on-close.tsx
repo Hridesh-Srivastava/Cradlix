@@ -1,41 +1,53 @@
 "use client"
 
-import { useEffect } from "react"
 import { useSession } from "next-auth/react"
+import { useEffect, useRef } from "react"
 
-// Sends a beacon to clear NextAuth cookies when a super-admin closes the tab/window.
 export function SuperAdminLogoutOnClose() {
   const { data: session } = useSession()
+  const isTabVisible = useRef(true)
+  const hasCleared = useRef(false)
 
   useEffect(() => {
-    const role = (session?.user as any)?.role
-    if (role !== "super-admin") return
-
-    const url = "/api/clear-auth"
-
-    const sendClear = () => {
-      try {
-        if (navigator.sendBeacon) {
-          const blob = new Blob([], { type: "application/json" })
-          navigator.sendBeacon(url, blob)
-        } else {
-          // Fallback for older browsers
-          fetch(url, { method: "POST", keepalive: true })
-        }
-      } catch {}
+    // Only handle super admin sessions
+    if (!session?.user || session.user.role !== "super-admin") {
+      return
     }
 
-    const onPageHide = () => sendClear()
-    const onBeforeUnload = () => sendClear()
+    const sendClear = () => {
+      if (hasCleared.current) return
+      hasCleared.current = true
+      
+      // Send a beacon to clear NextAuth cookies
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/auth/clear-session', JSON.stringify({}))
+      } else {
+        // Fallback for browsers that don't support sendBeacon
+        fetch('/api/auth/clear-session', {
+          method: 'POST',
+          body: JSON.stringify({}),
+          keepalive: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }).catch(() => {}) // Ignore errors
+      }
+    }
 
-    // pagehide/beforeunload are triggered on actual tab close or navigation,
-    // not merely when switching tabs.
+    // Only clear on actual window close, not on tab switch or refresh
+    const onPageHide = (e: PageTransitionEvent) => {
+      // persisted is false when the page is being unloaded (browser/tab close)
+      // persisted is true when the page is being cached (tab switch, navigation)
+      if (!e.persisted) {
+        sendClear()
+      }
+    }
+
+    // Listen for page hide (most reliable for actual close)
     window.addEventListener("pagehide", onPageHide)
-    window.addEventListener("beforeunload", onBeforeUnload)
 
     return () => {
       window.removeEventListener("pagehide", onPageHide)
-      window.removeEventListener("beforeunload", onBeforeUnload)
     }
   }, [session])
 

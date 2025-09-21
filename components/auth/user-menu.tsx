@@ -1,6 +1,7 @@
 "use client"
 
-import { signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { usePathname } from "next/navigation"
 import { User, LogOut, Settings, ShoppingBag, Heart, Shield, PlusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,39 @@ export function UserMenu({ user }: UserMenuProps) {
   const router = useRouter()
   const pathname = usePathname()
   const isSuperAdminPage = pathname?.startsWith("/super-admin")
+  const { data: session, update } = useSession()
+  const [currentUser, setCurrentUser] = useState<ExtendedUser>(user)
+
+  // Listen for avatar updates
+  useEffect(() => {
+    const handleAvatarUpdate = (event: CustomEvent) => {
+      console.log('UserMenu received avatar update event:', event.detail)
+      const { avatarUrl } = event.detail
+      setCurrentUser(prev => ({ ...prev, image: avatarUrl }))
+      // Also update the session
+      update()
+    }
+
+    window.addEventListener('avatarUpdated', handleAvatarUpdate as EventListener)
+    
+    return () => {
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener)
+    }
+  }, [update])
+
+  // Update current user when session changes
+  useEffect(() => {
+    if (session?.user) {
+      setCurrentUser(session.user as ExtendedUser)
+    }
+  }, [session])
+
+  // Also update when the user prop changes (fallback)
+  useEffect(() => {
+    if (user) {
+      setCurrentUser(user)
+    }
+  }, [user])
 
   const handleSignOut = async () => {
     try {
@@ -48,18 +82,18 @@ export function UserMenu({ user }: UserMenuProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.image || ""} alt={user.name || ""} />
-            <AvatarFallback>{getInitials(user.name || "U")}</AvatarFallback>
+            <AvatarImage src={currentUser.image || ""} alt={currentUser.name || ""} />
+            <AvatarFallback>{getInitials(currentUser.name || "U")}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
-            {user.role !== "customer" && (
-              <p className="text-xs leading-none text-primary font-medium capitalize">{user.role}</p>
+            <p className="text-sm font-medium leading-none">{currentUser.name}</p>
+            <p className="text-xs leading-none text-muted-foreground">{currentUser.email}</p>
+            {currentUser.role !== "customer" && (
+              <p className="text-xs leading-none text-primary font-medium capitalize">{currentUser.role}</p>
             )}
           </div>
         </DropdownMenuLabel>
@@ -91,7 +125,7 @@ export function UserMenu({ user }: UserMenuProps) {
           </DropdownMenuItem>
         )}
 
-        {(user.role === "admin" || user.role === "moderator" || user.role === "super-admin") && !isSuperAdminPage && (
+        {(currentUser.role === "admin" || currentUser.role === "moderator" || currentUser.role === "super-admin") && !isSuperAdminPage && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => router.push("/admin")}>

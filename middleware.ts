@@ -29,8 +29,9 @@ export async function middleware(request: NextRequest) {
   // This prevents redirecting during login process
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
   const isLoginPage = pathname.startsWith("/login")
+  const isApiRoute = pathname.startsWith("/api/")
   
-  if (isSuperAdmin && !hasSessionMarker && isProtectedRoute && !isLoginPage) {
+  if (isSuperAdmin && !hasSessionMarker && isProtectedRoute && !isLoginPage && !isApiRoute) {
     const loginUrl = new URL("/login", request.url)
     // Preserve destination so after re-login they can be routed appropriately
     if (pathname && pathname !== "/login") {
@@ -61,22 +62,6 @@ export async function middleware(request: NextRequest) {
       expires: new Date(0),
     })
     return response
-  }
-
-  // If super-admin is logged in and marker exists, ensure NextAuth cookie is session-scoped
-  if (isSuperAdmin && hasSessionMarker) {
-    const response = NextResponse.next()
-    const tokenValue = request.cookies.get("next-auth.session-token")?.value
-    if (tokenValue) {
-      response.cookies.set("next-auth.session-token", tokenValue, {
-        path: "/",
-        httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
-        // no expires -> becomes a session cookie
-      } as any)
-      return response
-    }
   }
 
   // Check if the current path is protected (already defined above)

@@ -147,27 +147,28 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 7 * 24 * 60 * 60, // 7 days (shorter for security)
   },
   jwt: {
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only-change-in-production",
+    maxAge: 7 * 24 * 60 * 60, // 7 days (shorter for security)
+    secret: process.env.NEXTAUTH_SECRET,
   },
   pages: {
     signIn: "/login",
     error: "/auth/error",
   },
-  secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development-only-change-in-production",
-  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: false, // Disable debug in production
   useSecureCookies: process.env.NODE_ENV === "production",
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === "production"
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
       }
     }
   },
