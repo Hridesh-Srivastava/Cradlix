@@ -10,6 +10,7 @@ import { buildUsersWorkbookBuffer } from '@/lib/export/users-excel'
 import { verifyRecaptcha } from '@/lib/security/recaptcha'
 import { getClientIp } from '@/lib/security/ip'
 import { rateLimit, rateLimitHeaders } from '@/lib/security/rate-limit'
+import { connectMongoDB, PendingRegistration } from '@/lib/db/mongodb'
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -39,9 +40,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Captcha verification failed' }, { status: 400, headers: rateLimitHeaders(rl) })
     }
 
-    // Check if user already exists
+    // Check if user already exists in SQL (final users table)
     const existingUser = await db.select().from(users).where(eq(users.email, email)).limit(1)
-    
     if (existingUser[0]) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
@@ -49,60 +49,54 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
+    // Prepare OTP-based pending registration
+    await connectMongoDB()
+    const passwordHash = await bcrypt.hash(password, 12)
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const now = Date.now()
+    const otpExpiresAt = new Date(now + 10 * 60 * 1000) // 10 minutes
+    const resendAvailableAt = new Date(now + 60 * 1000) // 1 minute
 
-    // Create user
-    const newUser = await db.insert(users).values({
-      name,
-      email,
-      password: hashedPassword,
-      role: 'customer',
-    }).returning()
+    await PendingRegistration.findOneAndUpdate(
+      { email },
+      {
+        email,
+        name,
+        passwordHash,
+        otp,
+        otpExpiresAt,
+        resendAvailableAt,
+        attempts: 0,
+        ipAddress: request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || undefined,
+        userAgent: request.headers.get('user-agent') || undefined,
+        updatedAt: new Date(),
+      },
+      { upsert: true, new: true }
+    )
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = newUser[0]
-
-    // Send emails (non-blocking best-effort)
-    try {
-      const from = process.env.EMAIL_USER
-      const adminTo = process.env.EMAIL_TO || from
-      const excel = await buildUsersWorkbookBuffer()
-      if (from && userWithoutPassword.email) {
-        await mailer.sendMail({
-          from,
-          to: userWithoutPassword.email,
-          subject: 'Welcome to Baby Store',
-          html: renderWelcomeUserHtml(userWithoutPassword.name || ''),
-        })
-      }
-      if (from && adminTo) {
-        await mailer.sendMail({
-          from,
-          to: adminTo,
-          subject: `New user: ${userWithoutPassword.name || ''} <${userWithoutPassword.email}>`,
-          html: renderNewUserAdminHtml({
-            name: userWithoutPassword.name,
-            email: userWithoutPassword.email,
-            role: (userWithoutPassword as any).role || 'customer',
-          }),
-          attachments: [
-            {
-              filename: 'users.xlsx',
-              content: Buffer.from(excel),
-              contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            },
-          ],
-        })
-      }
-    } catch (e) {
-      console.warn('Welcome/admin email failed:', e)
+    // Email the OTP
+    const from = process.env.EMAIL_USER
+    if (from) {
+      await mailer.sendMail({
+        from,
+        to: email,
+        subject: 'Your verification code for Baby Store',
+        html: `
+          <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto">
+            <h2 style="margin:0 0 12px">Verify your email</h2>
+            <p>Hi ${name},</p>
+            <p>Your one-time verification code is:</p>
+            <p style="font-size:28px;letter-spacing:6px;font-weight:700">${otp}</p>
+            <p>This code will expire in 10 minutes. If you didn't request this, you can ignore this email.</p>
+          </div>
+        `,
+      })
     }
 
     return NextResponse.json({
       success: true,
-      user: userWithoutPassword,
-      message: 'User registered successfully'
+      message: 'Verification code sent to your email',
+      next: `/verify-otp?email=${encodeURIComponent(email)}`,
     }, { headers: rateLimitHeaders(rl) })
   } catch (error) {
     if (error instanceof z.ZodError) {

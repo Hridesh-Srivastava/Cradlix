@@ -87,31 +87,18 @@ export function RegisterForm({ callbackUrl = "/" }: RegisterFormProps) {
         }),
       })
 
-      const data = await response.json()
+  const data = await response.json()
 
       if (!response.ok) {
         throw new Error(data.error || 'Registration failed')
       }
 
       toast({
-        title: "Account created successfully!",
-        description: "You can now sign in with your credentials.",
+        title: "Check your email",
+        description: "We sent a 6-digit code to verify your account.",
       })
-
-      // Auto sign in after registration
-      const signInResult = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        callbackUrl,
-        redirect: false,
-      })
-
-      if (signInResult?.error) {
-        router.push('/login')
-      } else {
-        router.push(callbackUrl)
-        router.refresh()
-      }
+      const nextUrl = data?.next || `/verify-otp?email=${encodeURIComponent(formData.email)}`
+      router.push(nextUrl)
     } catch (error) {
       toast({
         title: "Registration failed",

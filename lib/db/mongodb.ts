@@ -1,5 +1,13 @@
 import mongoose from "mongoose"
 
+declare global {
+  // eslint-disable-next-line no-var
+  var mongoose: {
+    conn: typeof import('mongoose') | null
+    promise: Promise<typeof import('mongoose')> | null
+  } | undefined
+}
+
 // MongoDB connection string
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/baby-ecommerce"
 
@@ -15,28 +23,30 @@ if (!cached) {
 }
 
 export async function connectMongoDB() {
-  if (cached.conn) {
-    return cached.conn
+  // After the guard above, cached is defined
+  const cache = cached!
+  if (cache.conn) {
+    return cache.conn
   }
 
-  if (!cached.promise) {
+  if (!cache.promise) {
     const opts = {
       bufferCommands: false,
     }
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+    cache.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose
     })
   }
 
   try {
-    cached.conn = await cached.promise
+    cache.conn = await cache.promise
   } catch (e) {
-    cached.promise = null
+    cache.promise = null
     throw e
   }
 
-  return cached.conn
+  return cache.conn
 }
 
 // Contact form schema
@@ -112,6 +122,23 @@ export const Newsletter = mongoose.models.Newsletter || mongoose.model("Newslett
 export const AnalyticsEvent = mongoose.models.AnalyticsEvent || mongoose.model("AnalyticsEvent", analyticsEventSchema)
 export const Feedback = mongoose.models.Feedback || mongoose.model("Feedback", feedbackSchema)
 export const SearchQuery = mongoose.models.SearchQuery || mongoose.model("SearchQuery", searchQuerySchema)
+
+// Pending registration schema (for OTP verification before creating SQL user)
+const pendingRegistrationSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  passwordHash: { type: String, required: true },
+  otp: { type: String, required: true }, // 6-digit string
+  otpExpiresAt: { type: Date, required: true },
+  resendAvailableAt: { type: Date, required: true },
+  attempts: { type: Number, default: 0 },
+  ipAddress: String,
+  userAgent: String,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+})
+
+export const PendingRegistration = mongoose.models.PendingRegistration || mongoose.model("PendingRegistration", pendingRegistrationSchema)
 
 // Utility functions
 export async function trackEvent(eventType: string, data: any) {
