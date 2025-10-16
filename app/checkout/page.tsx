@@ -10,20 +10,11 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, CreditCard, Smartphone, Truck } from 'lucide-react'
-
-interface CartItem {
-  id: string
-  quantity: number
-  product: {
-    id: string
-    name: string
-    price: string
-    images: { url: string; altText: string }[]
-  }
-}
+import { useCart } from '@/components/providers/cart-provider'
+import { formatCurrency } from '@/lib/utils'
 
 interface CheckoutData {
-  items: CartItem[]
+  items: any[]
   subtotal: number
   shipping: number
   tax: number
@@ -34,6 +25,7 @@ export default function CheckoutPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToast()
+  const { items: cartItems } = useCart()
   const [loading, setLoading] = useState(false)
   const [cartData, setCartData] = useState<CheckoutData | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<'razorpay' | 'cod'>('razorpay')
@@ -55,37 +47,26 @@ export default function CheckoutPage() {
       return
     }
 
-    if (status === 'authenticated') {
-      fetchCartData()
-    }
-  }, [status, router])
+    if (status === 'authenticated' || status === 'loading') {
+      // Calculate cart data from CartProvider
+      if (cartItems.length > 0) {
+        const subtotal = cartItems.reduce((sum, item) => 
+          sum + (Number(item.price) * item.quantity), 0
+        )
+        const shipping = subtotal > 1000 ? 0 : 50
+        const tax = Math.round(subtotal * 0.18 * 100) / 100 // 18% GST
+        const total = Math.round((subtotal + shipping + tax) * 100) / 100
 
-  const fetchCartData = async () => {
-    try {
-      const response = await fetch('/api/cart')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          const subtotal = data.items.reduce((sum: number, item: CartItem) => 
-            sum + (Number(item.product.price) * item.quantity), 0
-          )
-          const shipping = subtotal > 1000 ? 0 : 50
-          const tax = subtotal * 0.18 // 18% GST
-          const total = subtotal + shipping + tax
-
-          setCartData({
-            items: data.items,
-            subtotal,
-            shipping,
-            tax,
-            total,
-          })
-        }
+        setCartData({
+          items: cartItems,
+          subtotal: Math.round(subtotal * 100) / 100,
+          shipping,
+          tax,
+          total,
+        })
       }
-    } catch (error) {
-      console.error('Error fetching cart data:', error)
     }
-  }
+  }, [status, router, cartItems])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -99,90 +80,180 @@ export default function CheckoutPage() {
 
     setLoading(true)
     try {
+      // Prepare order items
+      const orderItems = cartData.items.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity,
+        price: Number(item.price),
+      }))
+
+      // Prepare shipping address
+      const shippingAddress = {
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        phone: formData.phone,
+        addressLine1: formData.address,
+        city: formData.city,
+        state: formData.state,
+        pincode: formData.zipCode,
+        country: formData.country,
+      }
+
       // Create Razorpay order
       const orderResponse = await fetch('/api/payment/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          paymentMethod: 'razorpay',
           amount: cartData.total,
-          currency: 'INR',
-          receipt: `order_${Date.now()}`,
+          items: orderItems,
+          shippingAddress,
+          billingAddress: shippingAddress,
         }),
       })
 
       const orderData = await orderResponse.json()
+      console.log('Order data:', orderData)
+
       if (!orderData.success) {
         throw new Error(orderData.error || 'Failed to create payment order')
       }
 
-      // Load Razorpay script
-      const script = document.createElement('script')
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js'
-      script.onload = () => {
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: cartData.total * 100, // Convert to paise
-          currency: 'INR',
-          name: 'Cradlix',
-          description: 'Payment for your order',
-          order_id: orderData.order.id,
-          handler: async function (response: any) {
-            // Verify payment
-            const verifyResponse = await fetch('/api/payment/verify', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-              }),
-            })
-
-            const verifyData = await verifyResponse.json()
-            if (verifyData.success) {
-              // Create order
-              await createOrder('razorpay', response.razorpay_payment_id)
-            } else {
-              toast({
-                title: 'Payment verification failed',
-                description: 'Please try again or contact support.',
-                variant: 'destructive',
-              })
-            }
-          },
-          prefill: {
-            name: `${formData.firstName} ${formData.lastName}`,
-            email: formData.email,
-            contact: formData.phone,
-          },
-          theme: {
-            color: '#3B82F6',
-          },
+      // Check if Razorpay script is already loaded
+      if ((window as any).Razorpay) {
+        openRazorpay(orderData.order.id)
+      } else {
+        // Load Razorpay script
+        const script = document.createElement('script')
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+        script.async = true
+        script.onload = () => {
+          console.log('Razorpay script loaded')
+          openRazorpay(orderData.order.id)
         }
-
-        const rzp = new (window as any).Razorpay(options)
-        rzp.open()
+        script.onerror = () => {
+          setLoading(false)
+          toast({
+            title: 'Script Loading Failed',
+            description: 'Failed to load payment gateway. Please try again.',
+            variant: 'destructive',
+          })
+        }
+        document.body.appendChild(script)
       }
-      document.body.appendChild(script)
     } catch (error) {
+      console.error('Payment error:', error)
+      setLoading(false)
       toast({
         title: 'Payment failed',
         description: error instanceof Error ? error.message : 'Please try again.',
         variant: 'destructive',
       })
-    } finally {
-      setLoading(false)
     }
+  }
+
+  const openRazorpay = (orderId: string) => {
+    if (!cartData) return
+
+    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
+    
+    if (!razorpayKeyId) {
+      console.error('Razorpay Key ID not found in environment variables')
+      setLoading(false)
+      toast({
+        title: 'Configuration Error',
+        description: 'Payment gateway is not configured properly. Please contact support.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    console.log('Razorpay Key ID found:', razorpayKeyId.substring(0, 10) + '...')
+
+    const options = {
+      key: razorpayKeyId,
+      amount: Math.round(cartData.total * 100), // Convert to paise
+      currency: 'INR',
+      name: 'Cradlix',
+      description: 'Payment for your order',
+      order_id: orderId,
+      handler: async function (response: any) {
+        console.log('Payment response:', response)
+        try {
+          // Verify payment
+          const verifyResponse = await fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              orderId: response.razorpay_order_id,
+              paymentId: response.razorpay_payment_id,
+              signature: response.razorpay_signature,
+            }),
+          })
+
+          const verifyData = await verifyResponse.json()
+          if (verifyData.success) {
+            // Create order
+            await createOrder('razorpay', response.razorpay_payment_id)
+          } else {
+            setLoading(false)
+            toast({
+              title: 'Payment verification failed',
+              description: 'Please try again or contact support.',
+              variant: 'destructive',
+            })
+          }
+        } catch (error) {
+          setLoading(false)
+          console.error('Verification error:', error)
+          toast({
+            title: 'Payment verification failed',
+            description: 'Please contact support.',
+            variant: 'destructive',
+          })
+        }
+      },
+      modal: {
+        ondismiss: function() {
+          setLoading(false)
+          toast({
+            title: 'Payment Cancelled',
+            description: 'You cancelled the payment.',
+          })
+        }
+      },
+      prefill: {
+        name: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        contact: formData.phone,
+      },
+      theme: {
+        color: '#3B82F6',
+      },
+    }
+
+    console.log('Opening Razorpay with options:', options)
+    const rzp = new (window as any).Razorpay(options)
+    rzp.on('payment.failed', function (response: any) {
+      setLoading(false)
+      console.error('Payment failed:', response.error)
+      toast({
+        title: 'Payment Failed',
+        description: response.error.description || 'Please try again.',
+        variant: 'destructive',
+      })
+    })
+    rzp.open()
   }
 
   const createOrder = async (paymentMethod: string, paymentId?: string) => {
     if (!cartData) return
 
+    setLoading(true)
     try {
       const orderItems = cartData.items.map(item => ({
-        productId: item.product.id,
+        productId: item.productId,
         quantity: item.quantity,
-        price: Number(item.product.price),
+        price: Number(item.price),
       }))
 
       const orderResponse = await fetch('/api/orders', {
@@ -231,10 +302,45 @@ export default function CheckoutPage() {
         description: error instanceof Error ? error.message : 'Please try again.',
         variant: 'destructive',
       })
+    } finally {
+      setLoading(false)
     }
   }
 
   const handlePlaceOrder = async () => {
+    // Validate form data
+    if (!formData.firstName || !formData.lastName || !formData.email || 
+        !formData.phone || !formData.address || !formData.city || 
+        !formData.state || !formData.zipCode) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please fill in all required fields.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: 'Invalid Email',
+        description: 'Please enter a valid email address.',
+        variant: 'destructive',
+      })
+      return
+    }
+
+    // Validate phone
+    if (formData.phone.length < 10) {
+      toast({
+        title: 'Invalid Phone',
+        description: 'Please enter a valid 10-digit phone number.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (paymentMethod === 'razorpay') {
       await handleRazorpayPayment()
     } else {
@@ -381,15 +487,15 @@ export default function CheckoutPage() {
                 {cartData.items.map((item) => (
                   <div key={item.id} className="flex items-center gap-3">
                     <img
-                      src={item.product.images[0]?.url || '/placeholder.svg'}
-                      alt={item.product.images[0]?.altText || item.product.name}
+                      src={item.product?.images?.[0]?.url || '/placeholder.svg'}
+                      alt={item.product?.images?.[0]?.altText || item.product?.name || 'Product'}
                       className="w-12 h-12 object-cover rounded"
                     />
                     <div className="flex-1">
-                      <h4 className="font-medium">{item.product.name}</h4>
+                      <h4 className="font-medium">{item.product?.name || 'Product'}</h4>
                       <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
                     </div>
-                    <p className="font-medium">₹{Number(item.product.price) * item.quantity}</p>
+                    <p className="font-medium">{formatCurrency(Number(item.price) * item.quantity)}</p>
                   </div>
                 ))}
               </div>
@@ -431,20 +537,20 @@ export default function CheckoutPage() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{cartData.subtotal}</span>
+                  <span>{formatCurrency(cartData.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>₹{cartData.shipping}</span>
+                  <span>{formatCurrency(cartData.shipping)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (GST)</span>
-                  <span>₹{cartData.tax}</span>
+                  <span>{formatCurrency(cartData.tax)}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>₹{cartData.total}</span>
+                  <span>{formatCurrency(cartData.total)}</span>
                 </div>
               </div>
 
@@ -460,7 +566,7 @@ export default function CheckoutPage() {
                     Processing...
                   </>
                 ) : (
-                  `Place Order - ₹${cartData.total}`
+                  `Place Order - ${formatCurrency(cartData.total)}`
                 )}
               </Button>
             </CardContent>

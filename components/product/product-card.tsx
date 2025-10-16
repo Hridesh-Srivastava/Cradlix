@@ -22,7 +22,7 @@ interface ProductCardProps {
 export function ProductCard({ product, className }: ProductCardProps) {
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { dispatch } = useCart()
+  const { addItem } = useCart()
   const { toast } = useToast()
 
   const primaryImage = product.images?.[0]?.url || "/placeholder.svg?height=300&width=300"
@@ -41,17 +41,24 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
     setIsLoading(true)
     try {
-      dispatch({
-        type: "ADD_ITEM",
-        payload: {
-          id: product.id,
-          name: product.name,
-          price: Number.parseFloat(product.price),
-          image: primaryImage,
-          slug: product.slug,
-          quantity: 1,
+      // Add to localStorage via CartProvider
+      addItem(product, 1)
+
+      // Also add to database
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity: 1,
+        }),
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to add to cart')
+      }
 
       toast({
         title: "Added to cart",

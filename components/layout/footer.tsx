@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { Baby, Facebook, Twitter, Instagram, Youtube } from "lucide-react"
+import Image from "next/image"
+import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
@@ -75,7 +76,13 @@ export function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
-              <Baby className="h-8 w-8 text-primary" />
+              <Image 
+                src="/cradlix-logo.png" 
+                alt="Cradlix Logo" 
+                width={32} 
+                height={32} 
+                className="h-8 w-8"
+              />
               <span className="text-xl font-bold">Cradlix</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">

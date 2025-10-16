@@ -18,12 +18,15 @@ type CartAction =
   | { type: "LOAD_CART"; payload: CartState }
 
 const CartContext = createContext<{
-  state: CartState
-  dispatch: React.Dispatch<CartAction>
+  items: CartItem[]
+  total: number
+  itemCount: number
   addItem: (product: Product, quantity?: number) => void
   removeItem: (productId: string) => void
   updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
+  getTotalPrice: () => number
+  getItemCount: () => number
 } | null>(null)
 
 function cartReducer(state: CartState, action: CartAction): CartState {
@@ -49,7 +52,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         productId: product.id,
         product,
         quantity,
-        price: product.price,
+        price: Number(product.price),
       }
 
       const updatedItems = [...state.items, newItem]
@@ -142,15 +145,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "CLEAR_CART" })
   }
 
+  const getTotalPrice = () => state.total
+
+  const getItemCount = () => state.itemCount
+
   return (
     <CartContext.Provider
       value={{
-        state,
-        dispatch,
+        items: state.items,
+        total: state.total,
+        itemCount: state.itemCount,
         addItem,
         removeItem,
         updateQuantity,
         clearCart,
+        getTotalPrice,
+        getItemCount,
       }}
     >
       {children}

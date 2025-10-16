@@ -188,7 +188,7 @@ export default function ContactPage() {
                   <Mail className="h-5 w-5 text-primary" />
                   <div>
                     <p className="font-medium">Email</p>
-                    <p className="text-gray-600">support@babystore.com</p>
+                    <p className="text-gray-600">support@cradlix.com</p>
                   </div>
                 </div>
                 
@@ -205,7 +205,6 @@ export default function ContactPage() {
                   <div>
                     <p className="font-medium">Address</p>
                     <p className="text-gray-600">
-                      123 Baby Street<br />
                       Rajpur Road, Dehradun<br />
                       Uttarakhand 248001<br />
                       India

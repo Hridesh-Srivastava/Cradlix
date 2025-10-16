@@ -22,12 +22,13 @@ export const RAZORPAY_CONFIG = {
 export async function createRazorpayOrder(amount: number, orderId: string) {
   try {
     const options = {
-      amount: amount * 100, // Convert to paise
+      amount: Math.round(amount * 100), // Convert to paise and ensure integer
       currency: RAZORPAY_CONFIG.currency,
       receipt: `${RAZORPAY_CONFIG.receipt_prefix}${orderId}`,
       payment_capture: 1,
     }
 
+    console.log('Creating Razorpay order with options:', options)
     const order = await razorpay.orders.create(options)
     return { success: true, order }
   } catch (error) {

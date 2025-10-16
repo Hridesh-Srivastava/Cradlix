@@ -277,7 +277,7 @@ export default function PrivacyPolicyPage() {
               <li><strong>Withdraw Consent:</strong> Withdraw consent for data processing (may affect service availability)</li>
             </ul>
             <p className="text-gray-700 mt-3">
-              To exercise these rights, contact us at <a href="mailto:privacy@babystore.com" className="text-primary hover:underline">privacy@babystore.com</a>
+              To exercise these rights, contact us at <a href="mailto:privacy@cradlix.com" className="text-primary hover:underline">privacy@cradlix.com</a>
             </p>
           </CardContent>
         </Card>
@@ -366,12 +366,12 @@ export default function PrivacyPolicyPage() {
                 <Mail className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <p className="font-medium text-gray-900">Email</p>
-                  <a href="mailto:privacy@babystore.com" className="text-primary hover:underline">
-                    privacy@babystore.com
+                  <a href="mailto:privacy@cradlix.com" className="text-primary hover:underline">
+                    privacy@cradlix.com
                   </a>
                   <p className="text-sm text-gray-600">or</p>
-                  <a href="mailto:support@babystore.com" className="text-primary hover:underline">
-                    support@babystore.com
+                  <a href="mailto:support@cradlix.com" className="text-primary hover:underline">
+                    support@cradlix.com
                   </a>
                 </div>
               </div>

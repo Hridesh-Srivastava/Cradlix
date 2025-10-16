@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useState } from "react"
 import { useSession } from "next-auth/react"
-import { ShoppingCart, Search, Menu, Heart, Baby, Plus } from "lucide-react"
+import { ShoppingCart, Search, Menu, Heart, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +24,7 @@ const navigation = [
 export function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { data: session } = useSession()
-  const { state: cartState } = useCart()
+  const { itemCount } = useCart()
   const role = (session?.user as any)?.role as string | undefined
   const canManageProducts = role === 'admin' || role === 'moderator' || role === 'super-admin'
 
@@ -32,7 +33,13 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
-          <Baby className="h-8 w-8 text-primary" />
+          <Image 
+            src="/cradlix-logo.png" 
+            alt="Cradlix Logo" 
+            width={32} 
+            height={32} 
+            className="h-8 w-8"
+          />
           <span className="text-xl font-bold">Cradlix</span>
         </Link>
 
@@ -85,9 +92,9 @@ export function Header() {
           <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
-              {cartState.itemCount > 0 && (
+              {itemCount > 0 && (
                 <Badge variant="destructive" className="absolute -right-2 -top-2 h-5 w-5 rounded-full p-0 text-xs">
-                  {cartState.itemCount}
+                  {itemCount}
                 </Badge>
               )}
             </Link>

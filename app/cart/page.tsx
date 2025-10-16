@@ -2,82 +2,53 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { useToast } from '@/hooks/use-toast'
 import { Loader2, ShoppingCart, Plus, Minus, Trash2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-
-interface CartItem {
-  id: string
-  quantity: number
-  product: {
-    id: string
-    name: string
-    price: string
-    images: { url: string; altText: string }[]
-  }
-}
+import { useCart } from '@/components/providers/cart-provider'
+import { formatCurrency } from '@/lib/utils'
 
 export default function CartPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const { toast } = useToast()
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const { items: cartItems, updateQuantity: updateCartQuantity, removeItem: removeCartItem } = useCart()
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/cart')
-      return
-    }
+    // Just mark as loaded since we're using CartProvider
+    setLoading(false)
+  }, [])
 
-    if (status === 'authenticated') {
-      fetchCartItems()
-    }
-  }, [status, router])
-
-  const fetchCartItems = async () => {
-    try {
-      const response = await fetch('/api/cart')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setCartItems(data.items)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching cart items:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
+  const updateQuantity = async (productId: string, newQuantity: number) => {
     if (newQuantity < 1) return
 
-    setUpdating(itemId)
+    setUpdating(productId)
     try {
-      const response = await fetch('/api/cart', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId, quantity: newQuantity }),
-      })
+      // Update in CartProvider (localStorage)
+      updateCartQuantity(productId, newQuantity)
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setCartItems(prev => 
-            prev.map(item => 
-              item.id === itemId ? { ...item, quantity: newQuantity } : item
-            )
-          )
-        }
+      // Also update in database if user is authenticated
+      if (session?.user) {
+        await fetch('/api/cart', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            productId,
+            quantity: newQuantity,
+          }),
+        })
       }
+
+      toast({
+        title: 'Quantity updated',
+        description: 'Cart has been updated.',
+      })
     } catch (error) {
       toast({
         title: 'Error updating quantity',
@@ -89,25 +60,27 @@ export default function CartPage() {
     }
   }
 
-  const removeItem = async (itemId: string) => {
-    setUpdating(itemId)
+  const removeItem = async (productId: string) => {
+    setUpdating(productId)
     try {
-      const response = await fetch('/api/cart', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId }),
-      })
+      // Remove from CartProvider
+      removeCartItem(productId)
 
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success) {
-          setCartItems(prev => prev.filter(item => item.id !== itemId))
-          toast({
-            title: 'Item removed',
-            description: 'Item has been removed from your cart.',
-          })
-        }
+      // Also remove from database if user is authenticated
+      if (session?.user) {
+        await fetch('/api/cart', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ productId }),
+        })
       }
+
+      toast({
+        title: 'Item removed',
+        description: 'Item has been removed from your cart.',
+      })
     } catch (error) {
       toast({
         title: 'Error removing item',
@@ -120,9 +93,10 @@ export default function CartPage() {
   }
 
   const calculateSubtotal = () => {
-    return cartItems.reduce((sum, item) => 
-      sum + (Number(item.product.price) * item.quantity), 0
+    const subtotal = cartItems.reduce((sum, item) => 
+      sum + (Number(item.price) * item.quantity), 0
     )
+    return Math.round(subtotal * 100) / 100 // Round to 2 decimal places
   }
 
   const calculateShipping = () => {
@@ -131,11 +105,14 @@ export default function CartPage() {
   }
 
   const calculateTax = () => {
-    return calculateSubtotal() * 0.18 // 18% GST
+    const subtotal = calculateSubtotal()
+    const tax = subtotal * 0.18 // 18% GST
+    return Math.round(tax * 100) / 100 // Round to 2 decimal places
   }
 
   const calculateTotal = () => {
-    return calculateSubtotal() + calculateShipping() + calculateTax()
+    const total = calculateSubtotal() + calculateShipping() + calculateTax()
+    return Math.round(total * 100) / 100 // Round to 2 decimal places
   }
 
   if (status === 'loading' || loading) {
@@ -187,20 +164,20 @@ export default function CartPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center gap-4">
                     <img
-                      src={item.product.images[0]?.url || '/placeholder.svg'}
-                      alt={item.product.images[0]?.altText || item.product.name}
+                      src={item.product?.images?.[0]?.url || '/placeholder.svg'}
+                      alt={item.product?.images?.[0]?.altText || item.product?.name || 'Product'}
                       className="w-20 h-20 object-cover rounded-lg"
                     />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg">{item.product.name}</h3>
-                      <p className="text-gray-600">₹{item.product.price}</p>
+                      <h3 className="font-semibold text-lg">{item.product?.name || 'Product'}</h3>
+                      <p className="text-gray-600">{formatCurrency(Number(item.price))}</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        disabled={updating === item.id || item.quantity <= 1}
+                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                        disabled={updating === item.productId || item.quantity <= 1}
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
@@ -208,19 +185,19 @@ export default function CartPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        disabled={updating === item.id}
+                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                        disabled={updating === item.productId}
                       >
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">₹{Number(item.product.price) * item.quantity}</p>
+                      <p className="font-semibold">{formatCurrency(Number(item.price) * item.quantity)}</p>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.id)}
-                        disabled={updating === item.id}
+                        onClick={() => removeItem(item.productId)}
+                        disabled={updating === item.productId}
                         className="text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -241,27 +218,29 @@ export default function CartPage() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>₹{calculateSubtotal()}</span>
+                  <span>{formatCurrency(calculateSubtotal())}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>₹{calculateShipping()}</span>
+                  <span>{formatCurrency(calculateShipping())}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (GST)</span>
-                  <span>₹{calculateTax()}</span>
+                  <span>{formatCurrency(calculateTax())}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>₹{calculateTotal()}</span>
+                  <span>{formatCurrency(calculateTotal())}</span>
                 </div>
                 <Button 
                   className="w-full" 
                   size="lg"
-                  onClick={() => router.push('/checkout')}
+                  asChild
                 >
-                  Proceed to Checkout
+                  <Link href="/checkout">
+                    Proceed to Checkout
+                  </Link>
                 </Button>
               </CardContent>
             </Card>
