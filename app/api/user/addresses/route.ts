@@ -11,22 +11,31 @@ export async function GET() {
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const rows = await db.select().from(addresses).where(eq(addresses.userId, session.user.id))
-    // Map legacy schema -> UI shape
+    
+    // Map database schema to UI format
     const mapped = rows.map((r: any) => ({
       id: r.id,
       type: r.type || 'home',
-      name: `${r.firstName} ${r.lastName}`.trim(),
+      firstName: r.firstName,
+      middleName: r.middleName,
+      lastName: r.lastName,
+      email: r.email,
+      countryCode: r.countryCode || '+91',
       phone: r.phone || '',
-      address: [r.addressLine1, r.addressLine2].filter(Boolean).join(', '),
+      addressLine1: r.addressLine1,
+      addressLine2: r.addressLine2,
       city: r.city,
       state: r.state,
-      pincode: r.postalCode,
+      postalCode: r.postalCode,
+      country: r.country,
       isDefault: r.isDefault,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
     }))
+    
     return NextResponse.json({ success: true, addresses: mapped })
   } catch (e) {
+    console.error('Get addresses error:', e)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -36,12 +45,45 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    
     const body = await request.json()
-  const { type = 'home', name, phone, address, city, state, pincode, isDefault = false } = body
-    if (!name || !phone || !address || !city || !state || !pincode) {
+    const { 
+      type = 'home',
+      firstName,
+      middleName,
+      lastName,
+      email,
+      countryCode = '+91',
+      phone,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      postalCode,
+      country = 'India',
+      isDefault = false
+    } = body
+
+    // Validate required fields
+    if (!firstName || !lastName || !phone || !addressLine1 || !city || !state || !postalCode) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Validate email format if provided
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
+      }
+    }
+
+    // Validate phone (10 digits)
+    const phoneRegex = /^\d{10}$/
+    if (!phoneRegex.test(phone)) {
+      return NextResponse.json({ error: 'Phone number must be 10 digits' }, { status: 400 })
+    }
+
+    // If this is set as default, unset other defaults
     if (isDefault) {
       await db.update(addresses).set({ isDefault: false }).where(eq(addresses.userId, session.user.id))
     }
@@ -51,36 +93,26 @@ export async function POST(request: NextRequest) {
       .values({
         userId: session.user.id,
         type: type === 'billing' ? 'billing' : 'shipping',
-        firstName: (name || '').split(' ').slice(0, -1).join(' ') || name,
-        lastName: (name || '').split(' ').slice(-1).join(' '),
+        firstName,
+        middleName: middleName || null,
+        lastName,
+        email: email || null,
+        countryCode,
         company: null,
-        addressLine1: (address || '').split(',')[0]?.trim() || address,
-        addressLine2: (address || '').split(',').slice(1).join(', ').trim() || null,
+        addressLine1,
+        addressLine2: addressLine2 || null,
         city,
         state,
-        postalCode: pincode,
-        country: 'India',
+        postalCode,
+        country,
         phone,
         isDefault,
       })
       .returning()
 
-    // Map back to UI shape
-    const ui = {
-      id: inserted.id,
-      type,
-      name,
-      phone,
-      address,
-      city,
-      state,
-      pincode,
-      isDefault,
-      createdAt: inserted.createdAt,
-      updatedAt: inserted.updatedAt,
-    }
-    return NextResponse.json({ success: true, address: ui })
+    return NextResponse.json({ success: true, address: inserted })
   } catch (e) {
+    console.error('Create address error:', e)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

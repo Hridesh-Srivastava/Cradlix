@@ -54,7 +54,10 @@ export const addresses = pgTable("addresses", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: varchar("type", { length: 20 }).default("shipping"), // shipping | billing
   firstName: varchar("first_name", { length: 255 }).notNull(),
+  middleName: varchar("middle_name", { length: 255 }),
   lastName: varchar("last_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }),
+  countryCode: varchar("country_code", { length: 5 }).default("+91"),
   company: varchar("company", { length: 255 }),
   addressLine1: varchar("address_line_1", { length: 255 }).notNull(),
   addressLine2: varchar("address_line_2", { length: 255 }),

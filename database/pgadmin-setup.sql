@@ -96,7 +96,9 @@ CREATE TABLE IF NOT EXISTS addresses (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type VARCHAR(20) DEFAULT 'shipping' CHECK (type IN ('shipping', 'billing')),
     first_name VARCHAR(255) NOT NULL,
+    middle_name VARCHAR(255),
     last_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
     company VARCHAR(255),
     address_line_1 VARCHAR(255) NOT NULL,
     address_line_2 VARCHAR(255),
@@ -104,6 +106,7 @@ CREATE TABLE IF NOT EXISTS addresses (
     state VARCHAR(255) NOT NULL,
     postal_code VARCHAR(20) NOT NULL,
     country VARCHAR(255) NOT NULL DEFAULT 'India',
+    country_code VARCHAR(5) DEFAULT '+91',
     phone VARCHAR(20),
     is_default BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -279,7 +282,7 @@ FROM products WHERE slug = 'bpa-free-baby-bottle-set'
 
 -- Create admin user (idempotent)
 INSERT INTO users (email, name, role)
-SELECT 'admin@babystore.com', 'Admin User', 'admin'
-WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = 'admin@babystore.com');
+SELECT 'admin@cradlix.com', 'Admin User', 'admin'
+WHERE NOT EXISTS (SELECT 1 FROM users u WHERE u.email = 'admin@cradlix.com');
 
 -- Done.
