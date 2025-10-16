@@ -92,3 +92,18 @@ BEGIN
     ALTER TABLE products ADD COLUMN care_instructions TEXT;
   END IF;
 END $$;
+
+-- ============================================
+-- CART_ITEMS TABLE COLUMNS
+-- ============================================
+
+-- Add session_id column to cart_items table
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'cart_items' AND column_name = 'session_id'
+  ) THEN
+    ALTER TABLE cart_items ADD COLUMN session_id VARCHAR(255);
+  END IF;
+END $$;

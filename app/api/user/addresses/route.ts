@@ -19,11 +19,16 @@ export async function GET() {
       firstName: r.firstName,
       middleName: r.middleName,
       lastName: r.lastName,
+      // Add backward compatible full name field
+      name: `${r.firstName}${r.middleName ? ' ' + r.middleName : ''} ${r.lastName}`.trim(),
       email: r.email,
       countryCode: r.countryCode || '+91',
       phone: r.phone || '',
       addressLine1: r.addressLine1,
       addressLine2: r.addressLine2,
+      // Add backward compatible field names
+      address: r.addressLine1,
+      pincode: r.postalCode,
       city: r.city,
       state: r.state,
       postalCode: r.postalCode,

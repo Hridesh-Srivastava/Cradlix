@@ -13,13 +13,17 @@ import { toast } from "sonner"
 interface Address {
   id: string
   type: string
-  name: string
+  firstName: string
+  middleName?: string
+  lastName: string
   phone: string
   address: string
   city: string
   state: string
   pincode: string
   isDefault: boolean
+  // For backward compatibility with existing code
+  name?: string
 }
 
 interface AddressSelectionProps {
@@ -33,7 +37,9 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [formData, setFormData] = useState({
-    name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     phone: "",
     address: "",
     city: "",
@@ -77,7 +83,7 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
+    if (!formData.firstName || !formData.lastName || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
       toast.error("Please fill all required fields")
       return
     }
@@ -85,7 +91,22 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
     try {
       const url = editingAddress ? "/api/user/addresses" : "/api/user/addresses"
       const method = editingAddress ? "PUT" : "POST"
-      const body = editingAddress ? { id: editingAddress.id, ...formData } : formData
+      
+      const apiPayload = {
+        firstName: formData.firstName.trim(),
+        middleName: formData.middleName.trim() || undefined,
+        lastName: formData.lastName.trim(),
+        phone: formData.phone,
+        addressLine1: formData.address,
+        city: formData.city,
+        state: formData.state,
+        postalCode: formData.pincode,
+        country: 'India',
+        type: formData.type,
+        isDefault: formData.isDefault,
+      }
+
+      const body = editingAddress ? { id: editingAddress.id, ...apiPayload } : apiPayload
 
       const response = await fetch(url, {
         method,
@@ -100,7 +121,9 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
         setDialogOpen(false)
         setEditingAddress(null)
         setFormData({
-          name: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
           phone: "",
           address: "",
           city: "",
@@ -122,7 +145,9 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
   const handleEdit = (address: Address) => {
     setEditingAddress(address)
     setFormData({
-      name: address.name,
+      firstName: address.firstName || "",
+      middleName: address.middleName || "",
+      lastName: address.lastName || "",
       phone: address.phone,
       address: address.address,
       city: address.city,
@@ -187,7 +212,9 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
               onClick={() => {
                 setEditingAddress(null)
                 setFormData({
-                  name: "",
+                  firstName: "",
+                  middleName: "",
+                  lastName: "",
                   phone: "",
                   address: "",
                   city: "",
@@ -207,27 +234,47 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
               <DialogTitle>{editingAddress ? "Edit Address" : "Add New Address"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="name">Full Name *</Label>
+                  <Label htmlFor="firstName">First Name *</Label>
                   <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="Enter full name"
+                    id="firstName"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    placeholder="Enter first name"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="middleName">Middle Name</Label>
                   <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    placeholder="Enter phone number"
+                    id="middleName"
+                    value={formData.middleName}
+                    onChange={(e) => handleInputChange("middleName", e.target.value)}
+                    placeholder="Enter middle name (optional)"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name *</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    placeholder="Enter last name"
                     required
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="Enter phone number"
+                  required
+                />
               </div>
 
               <div>
@@ -331,7 +378,9 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
                       <label htmlFor={address.id} className="cursor-pointer block">
                         <div className="flex items-start justify-between">
                           <div>
-                            <p className="font-semibold">{address.name}</p>
+                            <p className="font-semibold">
+                              {address.firstName} {address.middleName ? address.middleName + ' ' : ''}{address.lastName}
+                            </p>
                             <p className="text-sm text-muted-foreground mt-1">{address.address}</p>
                             <p className="text-sm text-muted-foreground">
                               {address.city}, {address.state} - {address.pincode}

@@ -46,7 +46,7 @@ declare global {
 type CheckoutStep = "address" | "payment" | "review"
 
 export function ComprehensiveCheckout() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("address")
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null)
@@ -139,13 +139,13 @@ export function ComprehensiveCheckout() {
       }))
 
       const shippingAddress = {
-        fullName: selectedAddress.name,
-        phone: selectedAddress.phone,
-        addressLine1: selectedAddress.address,
-        addressLine2: "",
-        city: selectedAddress.city,
-        state: selectedAddress.state,
-        pincode: selectedAddress.pincode,
+        fullName: selectedAddress.name || "",
+        phone: selectedAddress.phone || "",
+        addressLine1: selectedAddress.address || "",
+        addressLine2: selectedAddress.addressLine2 || "",
+        city: selectedAddress.city || "",
+        state: selectedAddress.state || "",
+        pincode: selectedAddress.pincode || "",
         country: "India",
       }
 
@@ -256,8 +256,21 @@ export function ComprehensiveCheckout() {
     }
   }
 
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push("/login?callbackUrl=/checkout")
+    }
+  }, [status, router])
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <LoadingSpinner className="h-8 w-8" />
+      </div>
+    )
+  }
+
   if (!session?.user) {
-    router.push("/login?callbackUrl=/checkout")
     return null
   }
 
