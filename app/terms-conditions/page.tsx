@@ -3,8 +3,8 @@ import { FileText, ShoppingCart, CreditCard, Truck, RefreshCw, Shield, AlertCirc
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Terms & Conditions - Baby Store',
-  description: 'Read our terms and conditions for using Baby Store website and services.',
+  title: 'Terms & Conditions - Cradlix',
+  description: 'Read our terms and conditions for using Cradlix website and services.',
 }
 
 export default function TermsConditionsPage() {
@@ -26,7 +26,7 @@ export default function TermsConditionsPage() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <p className="text-gray-700 leading-relaxed">
-              Welcome to <strong>Baby Store</strong>! These Terms and Conditions ("Terms") govern your use of our website and the purchase of products from our online store. By accessing or using our website, you agree to be bound by these Terms.
+              Welcome to <strong>Cradlix</strong>! These Terms and Conditions ("Terms") govern your use of our website and the purchase of products from our online store. By accessing or using our website, you agree to be bound by these Terms.
             </p>
             <p className="text-gray-700 leading-relaxed mt-4">
               Please read these Terms carefully before using our services. If you do not agree with any part of these Terms, you must not use our website or services.
@@ -46,7 +46,7 @@ export default function TermsConditionsPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">1.1 Acceptance of Terms</h3>
               <p className="text-gray-700">
-                By accessing and using Baby Store (the "Website"), you accept and agree to be bound by these Terms and Conditions, our Privacy Policy, and all applicable laws and regulations.
+                By accessing and using Cradlix (the "Website"), you accept and agree to be bound by these Terms and Conditions, our Privacy Policy, and all applicable laws and regulations.
               </p>
             </div>
 
@@ -67,10 +67,10 @@ export default function TermsConditionsPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">1.4 Business Information</h3>
               <p className="text-gray-700">
-                <strong>Baby Store</strong><br />
+                <strong>Cradlix</strong><br />
                 123 Baby Street, Rajpur Road<br />
                 Dehradun, Uttarakhand 248001, India<br />
-                Email: support@babystore.com<br />
+                Email: support@cradlix.com<br />
                 Phone: +91 98765 43210
               </p>
             </div>
@@ -416,7 +416,7 @@ export default function TermsConditionsPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">9.1 Ownership</h3>
               <p className="text-gray-700">
-                All content on this Website, including text, graphics, logos, images, software, and design, is the property of Baby Store or its licensors and is protected by copyright, trademark, and other intellectual property laws.
+                All content on this Website, including text, graphics, logos, images, software, and design, is the property of Cradlix or its licensors and is protected by copyright, trademark, and other intellectual property laws.
               </p>
             </div>
 
@@ -430,7 +430,7 @@ export default function TermsConditionsPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">9.3 Trademarks</h3>
               <p className="text-gray-700">
-                "Baby Store" and our logo are trademarks of Baby Store. All product names and brands are trademarks of their respective owners.
+                "Cradlix" and our logo are trademarks of Cradlix. All product names and brands are trademarks of their respective owners.
               </p>
             </div>
           </CardContent>
@@ -443,7 +443,7 @@ export default function TermsConditionsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-gray-700">
-              To the fullest extent permitted by law, Baby Store shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or goodwill, arising from:
+              To the fullest extent permitted by law, Cradlix shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or goodwill, arising from:
             </p>
             <ul className="list-disc list-inside space-y-1 text-gray-700 ml-4">
               <li>Your use or inability to use the Website or products</li>
@@ -465,7 +465,7 @@ export default function TermsConditionsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-700">
-              You agree to indemnify, defend, and hold harmless Baby Store, its affiliates, officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including legal fees) arising from your violation of these Terms, your use of the Website, or your violation of any rights of another party.
+              You agree to indemnify, defend, and hold harmless Cradlix, its affiliates, officers, directors, employees, and agents from any claims, liabilities, damages, losses, or expenses (including legal fees) arising from your violation of these Terms, your use of the Website, or your violation of any rights of another party.
             </p>
           </CardContent>
         </Card>
@@ -585,7 +585,7 @@ export default function TermsConditionsPage() {
           </CardHeader>
           <CardContent>
             <p className="text-gray-700">
-              These Terms, together with our Privacy Policy and any other legal notices published on the Website, constitute the entire agreement between you and Baby Store regarding your use of the Website.
+              These Terms, together with our Privacy Policy and any other legal notices published on the Website, constitute the entire agreement between you and Cradlix regarding your use of the Website.
             </p>
           </CardContent>
         </Card>
@@ -608,12 +608,12 @@ export default function TermsConditionsPage() {
                 <Mail className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <p className="font-medium text-gray-900">Email</p>
-                  <a href="mailto:legal@babystore.com" className="text-primary hover:underline">
-                    legal@babystore.com
+                  <a href="mailto:legal@cradlix.com" className="text-primary hover:underline">
+                    legal@cradlix.com
                   </a>
                   <p className="text-sm text-gray-600">or</p>
-                  <a href="mailto:support@babystore.com" className="text-primary hover:underline">
-                    support@babystore.com
+                  <a href="mailto:support@cradlix.com" className="text-primary hover:underline">
+                    support@cradlix.com
                   </a>
                 </div>
               </div>
@@ -632,7 +632,7 @@ export default function TermsConditionsPage() {
                 <div>
                   <p className="font-medium text-gray-900">Mailing Address</p>
                   <p className="text-gray-700">
-                    Baby Store<br />
+                    Cradlix<br />
                     123 Baby Street, Rajpur Road<br />
                     Dehradun, Uttarakhand 248001<br />
                     India
@@ -655,7 +655,7 @@ export default function TermsConditionsPage() {
         {/* Footer Note */}
         <div className="text-center text-sm text-gray-600 py-6">
           <p className="mb-2">
-            By using Baby Store, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions.
+            By using Cradlix, you acknowledge that you have read, understood, and agree to be bound by these Terms & Conditions.
           </p>
           <p>
             These Terms are effective as of October 13, 2025.
@@ -665,3 +665,5 @@ export default function TermsConditionsPage() {
     </div>
   )
 }
+
+

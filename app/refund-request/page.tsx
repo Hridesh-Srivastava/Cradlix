@@ -312,7 +312,7 @@ export default function RefundRequestPage() {
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-1">Need Help?</h4>
                   <p>Contact our customer support:</p>
-                  <p className="mt-1">📧 Email: support@babystore.com</p>
+                  <p className="mt-1">📧 Email: support@cradlix.com</p>
                   <p>📞 Phone: +91 98765 43210</p>
                   <p className="text-xs text-gray-600 mt-2">Monday-Friday: 9 AM - 6 PM IST</p>
                 </div>
@@ -333,3 +333,4 @@ export default function RefundRequestPage() {
     </div>
   )
 }
+

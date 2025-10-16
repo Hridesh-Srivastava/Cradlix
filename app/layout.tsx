@@ -17,15 +17,15 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   title: {
-    default: "Baby Store - Premium Baby Products & Toys",
-    template: "%s | Baby Store",
+    default: "Cradlix - Premium Baby Products & Toys",
+    template: "%s | Cradlix",
   },
   description:
     "Discover the best baby products and toys for your little ones. Safe, high-quality, and affordable products with fast delivery.",
   keywords: "baby products, baby toys, infant care, toddler toys, baby accessories, online baby store",
-  authors: [{ name: "Baby Store Team" }],
-  creator: "Baby Store",
-  publisher: "Baby Store",
+  authors: [{ name: "Cradlix Team" }],
+  creator: "Cradlix",
+  publisher: "Cradlix",
   formatDetection: {
     email: false,
     address: false,
@@ -36,15 +36,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://your-domain.com",
-    title: "Baby Store - Premium Baby Products & Toys",
+    title: "Cradlix - Premium Baby Products & Toys",
     description: "Discover the best baby products and toys for your little ones.",
-    siteName: "Baby Store",
+    siteName: "Cradlix",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Baby Store - Premium Baby Products & Toys",
+    title: "Cradlix - Premium Baby Products & Toys",
     description: "Discover the best baby products and toys for your little ones.",
-    creator: "@babystore",
+    creator: "@cradlix",
   },
   robots: {
     index: true,

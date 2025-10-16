@@ -6,7 +6,7 @@ import { TestimonialsSection } from "@/components/sections/testimonials-section"
 import { NewsletterSection } from "@/components/sections/newsletter-section"
 
 export const metadata: Metadata = {
-  title: "Baby Store - Premium Baby Products & Toys",
+  title: "Cradlix - Premium Baby Products & Toys",
   description:
     "Discover the best baby products and toys for your little ones. Safe, high-quality, and affordable products with fast delivery.",
   keywords: "baby products, baby toys, infant care, toddler toys, baby accessories",

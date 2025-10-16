@@ -228,7 +228,7 @@ export const authOptions: NextAuthOptions = {
           await mailer.sendMail({
             from,
             to: user.email,
-            subject: "Welcome to Baby Store",
+            subject: "Welcome to Cradlix",
             html: renderWelcomeUserHtml(user.name || ""),
           })
         }

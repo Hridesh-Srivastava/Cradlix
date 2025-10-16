@@ -182,7 +182,7 @@ async function migrateNewTables() {
     // Insert sample banners
     const sampleBanners = [
       {
-        title: 'Welcome to Baby Store',
+        title: 'Welcome to Cradlix',
         subtitle: 'Premium Baby Products',
         description: 'Discover safe, high-quality baby products and toys for your little ones',
         buttonText: 'Shop Now',

@@ -150,7 +150,7 @@ export async function POST(req: Request) {
       await mailer.sendMail({
         from,
         to: email,
-        subject: "Refund Request Received - Baby Store",
+        subject: "Refund Request Received - Cradlix",
         html: renderUserRefundThankYouHtml(name, amount, paymentId),
       })
     }

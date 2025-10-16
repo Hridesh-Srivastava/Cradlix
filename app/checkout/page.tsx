@@ -123,7 +123,7 @@ export default function CheckoutPage() {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
           amount: cartData.total * 100, // Convert to paise
           currency: 'INR',
-          name: 'Baby Store',
+          name: 'Cradlix',
           description: 'Payment for your order',
           order_id: orderData.order.id,
           handler: async function (response: any) {

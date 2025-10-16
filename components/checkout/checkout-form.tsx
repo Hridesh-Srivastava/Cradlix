@@ -104,8 +104,8 @@ export function CheckoutForm() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: orderData.amount * 100,
         currency: "INR",
-        name: "Baby Store",
-        description: "Purchase from Baby Store",
+        name: "Cradlix",
+        description: "Purchase from Cradlix",
         order_id: orderData.order.id,
         prefill: {
           name: shippingAddress.fullName,

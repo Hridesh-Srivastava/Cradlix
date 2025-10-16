@@ -75,11 +75,11 @@ export async function POST(req: Request) {
       await mailer.sendMail({
         from,
         to: email,
-        subject: "Thanks for subscribing to Baby Store",
+        subject: "Thanks for subscribing to Cradlix",
         html: `
           <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto">
             <h2 style="margin:0 0 12px">You're in! 🎉</h2>
-            <p style="color:#333">Thanks for subscribing to the Baby Store newsletter.</p>
+            <p style="color:#333">Thanks for subscribing to the Cradlix newsletter.</p>
             <p style="color:#333">You'll receive exclusive offers, product updates, and parenting tips straight to your inbox.</p>
             <p style="margin:20px 0">
               <a href="${process.env.NEXTAUTH_URL || "http://localhost:3000"}/products" style="display:inline-block;background:#111;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none">Start exploring</a>

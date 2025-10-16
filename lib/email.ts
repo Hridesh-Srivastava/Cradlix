@@ -36,7 +36,7 @@ export function renderAdminContactHtml(data: { name: string; email: string; phon
 export function renderUserThankYouHtml(name: string) {
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto">
-    <h2 style="margin:0 0 12px">Thank you for contacting Baby Store</h2>
+    <h2 style="margin:0 0 12px">Thank you for contacting Cradlix</h2>
     <p style="color:#333">Hi ${name || "there"},</p>
     <p style="color:#333">We’ve received your message and our team will get back to you within 24 hours.</p>
     <p style="color:#666">If this wasn’t you, you can ignore this email.</p>
@@ -49,7 +49,7 @@ export function renderWelcomeUserHtml(name: string) {
   const startUrl = `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/products`
   return `
   <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto">
-    <h2 style="margin:0 0 12px">Welcome to Baby Store</h2>
+    <h2 style="margin:0 0 12px">Welcome to Cradlix</h2>
     <p style="color:#333">Hi ${name || "there"},</p>
     <p style="color:#333">Your account has been created successfully. Start shopping with us!</p>
     <p style="margin:20px 0">
@@ -170,7 +170,7 @@ export function renderUserRefundThankYouHtml(name: string, refundAmount: number,
     <p style="color:#333">If you have any questions or need to provide additional information, please feel free to contact us:</p>
     
     <div style="background:#f9fafb;padding:12px;border-radius:6px;margin:16px 0">
-      <p style="margin:4px 0;color:#374151;font-size:14px">📧 Email: <a href="mailto:support@babystore.com" style="color:#2563eb">support@babystore.com</a></p>
+      <p style="margin:4px 0;color:#374151;font-size:14px">📧 Email: <a href="mailto:support@cradlix.com" style="color:#2563eb">support@cradlix.com</a></p>
       <p style="margin:4px 0;color:#374151;font-size:14px">📞 Phone: +91 98765 43210</p>
       <p style="margin:4px 0;color:#6b7280;font-size:13px">Monday-Friday: 9 AM - 6 PM IST</p>
     </div>
@@ -178,12 +178,14 @@ export function renderUserRefundThankYouHtml(name: string, refundAmount: number,
     <p style="color:#666;margin-top:24px">Thank you for your patience and for being a valued customer.</p>
     
     <p style="color:#666">Best regards,<br/>
-    <strong>Baby Store Support Team</strong></p>
+    <strong>Cradlix Support Team</strong></p>
     
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0"/>
     <p style="color:#9ca3af;font-size:12px;text-align:center">
       This is an automated confirmation email. Please do not reply to this email.<br/>
-      For assistance, contact us at support@babystore.com
+      For assistance, contact us at support@cradlix.com
     </p>
   </div>`
 }
+
+

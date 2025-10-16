@@ -147,7 +147,7 @@ export async function generateMetadata({ params }: CategoryPageProps) {
   }
 
   return {
-    title: `${category.name} | Baby Store`,
+    title: `${category.name} | Cradlix`,
     description: category.description,
   }
 }

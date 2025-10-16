@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: ProductPageProps) {
   if (!product) return {}
 
   return {
-    title: `${product.name} | Baby Store`,
+    title: `${product.name} | Cradlix`,
     description: product.shortDescription,
     openGraph: {
       title: product.name,

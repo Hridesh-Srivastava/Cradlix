@@ -170,7 +170,7 @@ const faqs: FAQ[] = [
   {
     id: 21,
     question: "How can I contact customer support?",
-    answer: "You can reach us through multiple channels: Email at support@babystore.com, Call/WhatsApp at +91 98765 43210, or use our Contact Form on the website. Our business hours are Monday-Friday: 9 AM-6 PM, Saturday: 10 AM-4 PM. We respond to all queries within 24 hours.",
+    answer: "You can reach us through multiple channels: Email at support@cradlix.com, Call/WhatsApp at +91 98765 43210, or use our Contact Form on the website. Our business hours are Monday-Friday: 9 AM-6 PM, Saturday: 10 AM-4 PM. We respond to all queries within 24 hours.",
     category: "Customer Support",
     icon: <Phone className="h-5 w-5" />
   },
@@ -335,3 +335,4 @@ export default function FAQsPage() {
     </div>
   )
 }
+

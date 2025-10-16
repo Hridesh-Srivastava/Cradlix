@@ -3,8 +3,8 @@ import { Shield, Lock, Eye, Database, CreditCard, Mail, Phone, MapPin } from 'lu
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Privacy Policy - Baby Store',
-  description: 'Learn how Baby Store collects, uses, and protects your personal information.',
+  title: 'Privacy Policy - Cradlix',
+  description: 'Learn how Cradlix collects, uses, and protects your personal information.',
 }
 
 export default function PrivacyPolicyPage() {
@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <p className="text-gray-700 leading-relaxed">
-              At <strong>Baby Store</strong>, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and make purchases from our online store.
+              At <strong>Cradlix</strong>, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and make purchases from our online store.
             </p>
             <p className="text-gray-700 leading-relaxed mt-4">
               By using our website, you consent to the practices described in this Privacy Policy. Please read this policy carefully to understand our views and practices regarding your personal data.
@@ -390,8 +390,8 @@ export default function PrivacyPolicyPage() {
                 <div>
                   <p className="font-medium text-gray-900">Mailing Address</p>
                   <p className="text-gray-700">
-                    Baby Store<br />
-                    123 Baby Street, Rajpur Road<br />
+                    Cradlix<br />
+                    Rajpur Road<br />
                     Dehradun, Uttarakhand 248001<br />
                     India
                   </p>
@@ -413,7 +413,7 @@ export default function PrivacyPolicyPage() {
         {/* Footer Note */}
         <div className="text-center text-sm text-gray-600 py-6">
           <p>
-            By using Baby Store, you acknowledge that you have read and understood this Privacy Policy.
+            By using Cradlix, you acknowledge that you have read and understood this Privacy Policy.
           </p>
         </div>
       </div>

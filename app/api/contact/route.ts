@@ -114,7 +114,7 @@ export async function POST(req: Request) {
       await mailer.sendMail({
         from,
         to: email,
-        subject: "Thanks for contacting Baby Store",
+        subject: "Thanks for contacting Cradlix",
         html: renderUserThankYouHtml(name),
       })
     }

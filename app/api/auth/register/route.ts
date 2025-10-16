@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       await mailer.sendMail({
         from,
         to: email,
-        subject: 'Your verification code for Baby Store',
+        subject: 'Your verification code for Cradlix',
         html: `
           <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:auto">
             <h2 style="margin:0 0 12px">Verify your email</h2>

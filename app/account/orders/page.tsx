@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth/config"
 import { OrdersList } from "@/components/account/orders-list"
 
 export const metadata: Metadata = {
-  title: "Orders - Baby Store",
+  title: "Orders - Cradlix",
   description: "View your order history",
 }
 

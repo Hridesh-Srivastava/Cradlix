@@ -5,7 +5,7 @@ import { ProfileForm } from "@/components/account/profile-form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
-  title: "Profile - Baby Store",
+  title: "Profile - Cradlix",
   description: "Manage your account profile",
 }
 

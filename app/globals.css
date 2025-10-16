@@ -230,3 +230,16 @@ a:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+
+/* reCAPTCHA badge positioning - adjust to not hide footer content */
+.grecaptcha-badge {
+  bottom: 80px !important;
+  z-index: 999 !important;
+}
+
+/* Hide reCAPTCHA badge on mobile for better UX */
+@media (max-width: 768px) {
+  .grecaptcha-badge {
+    bottom: 100px !important;
+  }
+}

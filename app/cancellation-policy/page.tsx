@@ -1,478 +1,599 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { 
   XCircle, 
   Clock, 
-  CheckCircle, 
+  CheckCircle2, 
   AlertTriangle, 
   Ban, 
   RefreshCw,
   Phone,
   Mail,
-  Info
+  Info,
+  Package,
+  Shield
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Cancellation Policy | Baby Products Ecommerce',
-  description: 'Learn about our order cancellation policy, timeframes, refund process, and how to cancel your order.',
-  keywords: 'cancellation policy, order cancellation, cancel order, refund policy, order modifications',
+  title: 'Cancellation Policy - Cradlix',
+  description: 'Understand our order cancellation policy, timelines, refund procedures, and how to cancel your order effectively.',
+  keywords: 'cancellation policy, order cancellation, cancel order, refund policy, order modifications, return policy',
 };
 
 export default function CancellationPolicyPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-10">
-          <div className="flex justify-center mb-4">
-            <div className="bg-red-100 p-4 rounded-full">
-              <XCircle className="h-12 w-12 text-red-600" />
-            </div>
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+            <XCircle className="h-8 w-8 text-red-600" />
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Cancellation Policy
           </h1>
-          <p className="text-lg text-gray-600">
-            Easy cancellation process with full transparency
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Flexible cancellation options with transparent refund processes
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Last Updated: January 2025
+            Last Updated: October 16, 2025
           </p>
         </div>
 
         {/* Quick Overview Alert */}
-        <Alert className="mb-8 border-blue-200 bg-blue-50">
-          <Info className="h-5 w-5 text-blue-600" />
-          <AlertDescription className="ml-2">
-            <div className="space-y-2">
-              <p className="font-semibold text-blue-900">Key Points:</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-800 text-sm">
-                <li><strong>Free cancellation</strong> within 1 hour of order placement</li>
-                <li><strong>Full refund</strong> if cancelled before shipment</li>
-                <li><strong>No cancellation</strong> once order is shipped</li>
-                <li><strong>COD orders</strong> can be cancelled anytime before delivery</li>
-                <li><strong>Refunds processed</strong> within 5-7 business days</li>
-              </ul>
-            </div>
+        <Alert className="mb-8 border-primary/30 bg-primary/5">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <AlertTitle className="text-lg">Quick Overview</AlertTitle>
+          <AlertDescription className="mt-2">
+            <ul className="space-y-1 text-sm">
+              <li>✅ Cancel orders within 1 hour - instant cancellation</li>
+              <li>✅ Full refund if cancelled before dispatch</li>
+              <li>✅ Refunds processed in 5-7 business days</li>
+              <li>✅ COD orders can be cancelled anytime before delivery</li>
+              <li>✅ Easy cancellation from your account dashboard</li>
+            </ul>
           </AlertDescription>
         </Alert>
 
-        {/* Section 1: Cancellation Timeframes */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-blue-500">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Clock className="h-6 w-6 text-blue-600" />
-              Cancellation Timeframes
+        {/* Overview Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              1. Cancellation Overview
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6 space-y-6">
-            {/* Within 1 Hour */}
-            <div className="border-l-4 border-green-500 pl-4 py-2 bg-green-50 rounded-r-lg">
-              <h3 className="font-bold text-lg text-green-900 mb-2 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Within 1 Hour of Order Placement
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span><strong>Instant cancellation:</strong> Cancel your order directly from your account dashboard</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span><strong>100% refund:</strong> Full amount refunded immediately to original payment method</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span><strong>No questions asked:</strong> Simple one-click cancellation process</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-green-600 mt-1">✓</span>
-                  <span><strong>No cancellation fee:</strong> Completely free to cancel</span>
-                </li>
+          <CardContent className="space-y-4">
+            <p className="text-gray-700">
+              We understand that circumstances change. Our cancellation policy is designed to provide you flexibility while maintaining service quality. You can cancel your order at different stages with varying procedures.
+            </p>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">Why We Have This Policy</h3>
+              <ul className="space-y-1 text-sm text-blue-800 ml-4 list-disc">
+                <li>To ensure fair treatment for all customers</li>
+                <li>To manage inventory and logistics efficiently</li>
+                <li>To prevent misuse of services while maintaining flexibility</li>
+                <li>To provide transparent refund processes</li>
               </ul>
             </div>
 
-            {/* Before Shipment */}
-            <div className="border-l-4 border-yellow-500 pl-4 py-2 bg-yellow-50 rounded-r-lg">
-              <h3 className="font-bold text-lg text-yellow-900 mb-2 flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5" />
-                After 1 Hour but Before Shipment
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 mt-1">•</span>
-                  <span><strong>Contact required:</strong> Email or call customer support to request cancellation</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 mt-1">•</span>
-                  <span><strong>Subject to approval:</strong> We'll check if order has been processed for shipment</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 mt-1">•</span>
-                  <span><strong>Full refund (if approved):</strong> 100% amount returned if not yet shipped</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-yellow-600 mt-1">•</span>
-                  <span><strong>Response time:</strong> We'll respond within 2-4 hours during business hours</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* After Shipment */}
-            <div className="border-l-4 border-red-500 pl-4 py-2 bg-red-50 rounded-r-lg">
-              <h3 className="font-bold text-lg text-red-900 mb-2 flex items-center gap-2">
-                <Ban className="h-5 w-5" />
-                After Order Has Been Shipped
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                <li className="flex items-start gap-2">
-                  <span className="text-red-600 mt-1">✗</span>
-                  <span><strong>No cancellation:</strong> Orders cannot be cancelled once shipped</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-600 mt-1">✗</span>
-                  <span><strong>Return instead:</strong> You may return the product after delivery (refer to our Return Policy)</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-600 mt-1">✗</span>
-                  <span><strong>Tracking available:</strong> Monitor your order status via tracking link sent to your email</span>
-                </li>
-              </ul>
-            </div>
+            <p className="text-sm text-gray-600">
+              <strong>Important:</strong> This policy applies to all orders placed through our website or mobile application. Special promotional offers may have specific cancellation terms mentioned at the time of purchase.
+            </p>
           </CardContent>
         </Card>
 
-        {/* Section 2: How to Cancel Your Order */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-purple-500">
-          <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <RefreshCw className="h-6 w-6 text-purple-600" />
-              How to Cancel Your Order
+        {/* Cancellation Timeframes */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              2. When Can You Cancel?
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-6">
-              {/* Method 1: Self-Service */}
-              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                <h3 className="font-bold text-lg mb-3 text-gray-900">
-                  Method 1: Self-Service (Within 1 Hour)
-                </h3>
-                <ol className="space-y-3 text-gray-700">
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">1.</span>
-                    <span><strong>Log in</strong> to your account at <Link href="/account" className="text-blue-600 hover:underline">Your Account</Link></span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">2.</span>
-                    <span><strong>Go to "My Orders"</strong> section and find your recent order</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">3.</span>
-                    <span><strong>Click "Cancel Order"</strong> button next to the order (available only within 1 hour)</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">4.</span>
-                    <span><strong>Confirm cancellation</strong> and receive instant confirmation email</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">5.</span>
-                    <span><strong>Refund initiated</strong> automatically to your original payment method</span>
-                  </li>
-                </ol>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+              {/* Within 1 Hour */}
+              <div className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
+                <div className="flex items-start gap-3 mb-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-lg text-green-900">
+                      Within 1 Hour of Order Placement
+                    </h3>
+                    <p className="text-green-700 text-sm mt-1">Self-service cancellation available</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-gray-700 text-sm ml-9">
+                  <li><strong>How:</strong> Cancel directly from your account - no approval needed</li>
+                  <li><strong>Refund:</strong> 100% amount refunded to original payment source</li>
+                  <li><strong>Processing Time:</strong> Instant cancellation confirmation</li>
+                  <li><strong>Charges:</strong> No cancellation fee</li>
+                </ul>
               </div>
 
-              {/* Method 2: Contact Support */}
-              <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-                <h3 className="font-bold text-lg mb-3 text-gray-900">
-                  Method 2: Contact Customer Support (After 1 Hour)
-                </h3>
-                <ol className="space-y-3 text-gray-700">
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">1.</span>
-                    <span><strong>Email us</strong> at <a href="mailto:support@babyproducts.com" className="text-blue-600 hover:underline">support@babyproducts.com</a></span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">2.</span>
-                    <span><strong>Call us</strong> at <a href="tel:+911234567890" className="text-blue-600 hover:underline">+91-1234567890</a> (Mon-Sat, 9 AM - 6 PM)</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">3.</span>
-                    <span><strong>Provide order details:</strong> Order ID, registered email, and reason for cancellation</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">4.</span>
-                    <span><strong>Wait for confirmation:</strong> We'll check shipment status and confirm cancellation eligibility</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="font-bold text-purple-600 flex-shrink-0">5.</span>
-                    <span><strong>Receive cancellation email</strong> with refund timeline details</span>
-                  </li>
-                </ol>
+              {/* Before Dispatch */}
+              <div className="border-l-4 border-yellow-500 bg-yellow-50 p-4 rounded-r-lg">
+                <div className="flex items-start gap-3 mb-3">
+                  <AlertTriangle className="h-6 w-6 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-lg text-yellow-900">
+                      After 1 Hour but Before Dispatch
+                    </h3>
+                    <p className="text-yellow-700 text-sm mt-1">Requires customer support assistance</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-gray-700 text-sm ml-9">
+                  <li><strong>How:</strong> Contact customer support with order details</li>
+                  <li><strong>Refund:</strong> Full refund if order not yet dispatched</li>
+                  <li><strong>Processing Time:</strong> Response within 2-4 hours</li>
+                  <li><strong>Approval:</strong> Subject to order processing status</li>
+                </ul>
+              </div>
+
+              {/* After Dispatch */}
+              <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <div className="flex items-start gap-3 mb-3">
+                  <Ban className="h-6 w-6 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="font-bold text-lg text-red-900">
+                      After Dispatch/In Transit
+                    </h3>
+                    <p className="text-red-700 text-sm mt-1">Cancellation not available</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-gray-700 text-sm ml-9">
+                  <li><strong>Status:</strong> Orders cannot be cancelled once shipped</li>
+                  <li><strong>Alternative:</strong> Use our return policy after receiving the product</li>
+                  <li><strong>Exception:</strong> COD orders can be refused at delivery</li>
+                  <li><strong>Tracking:</strong> Monitor delivery via tracking link in email/SMS</li>
+                </ul>
               </div>
             </div>
+
+            <Alert className="border-gray-300 bg-gray-50 mt-4">
+              <Info className="h-4 w-4 text-gray-600" />
+              <AlertDescription className="text-gray-700 text-sm ml-2">
+                <strong>Order Status Guide:</strong> Orders go through stages: Order Confirmed → Processing → Packed → Dispatched → In Transit → Out for Delivery → Delivered. Cancellation is possible only during the first two stages.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
 
-        {/* Section 3: Refund Process */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-green-500">
-          <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <RefreshCw className="h-6 w-6 text-green-600" />
-              Refund Process After Cancellation
+        {/* How to Cancel */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-primary" />
+              3. How to Cancel Your Order
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <p className="text-gray-700 mb-4">
-                Once your cancellation is confirmed, refunds are processed as follows:
+          <CardContent className="space-y-6">
+            {/* Self-Service Method */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-5">
+              <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Method 1: Self-Service Cancellation (Within 1 Hour)
+              </h3>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                  <p className="text-gray-700 text-sm"><strong>Sign in</strong> to your account at <Link href="/account" className="text-primary hover:underline">Your Account</Link></p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                  <p className="text-gray-700 text-sm"><strong>Navigate</strong> to "Orders" section from the menu</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                  <p className="text-gray-700 text-sm"><strong>Locate</strong> the order you wish to cancel</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                  <p className="text-gray-700 text-sm"><strong>Click</strong> on "Cancel Order" button (available only within 1 hour)</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">5</div>
+                  <p className="text-gray-700 text-sm"><strong>Select</strong> cancellation reason from the dropdown menu</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">6</div>
+                  <p className="text-gray-700 text-sm"><strong>Confirm</strong> cancellation and receive instant email notification</p>
+                </div>
+              </div>
+              <p className="text-xs text-green-800 mt-4 bg-green-100 p-2 rounded">
+                💡 <strong>Tip:</strong> Cancellation is processed immediately. You'll receive a confirmation email within minutes.
               </p>
+            </div>
 
-              {/* Refund Timeline Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 text-sm">
-                  <thead>
-                    <tr className="bg-gradient-to-r from-green-100 to-emerald-100">
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Payment Method</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Refund Timeline</th>
-                      <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Refund Mode</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-medium">Credit/Debit Card</td>
-                      <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
-                      <td className="border border-gray-300 px-4 py-3">Original card</td>
-                    </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-medium">Net Banking</td>
-                      <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
-                      <td className="border border-gray-300 px-4 py-3">Original bank account</td>
-                    </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-medium">UPI (GPay, PhonePe, Paytm)</td>
-                      <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
-                      <td className="border border-gray-300 px-4 py-3">Original UPI ID</td>
-                    </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-medium">Wallet (Paytm, Amazon Pay)</td>
-                      <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
-                      <td className="border border-gray-300 px-4 py-3">Original wallet</td>
-                    </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="border border-gray-300 px-4 py-3 font-medium">Cash on Delivery (COD)</td>
-                      <td className="border border-gray-300 px-4 py-3">N/A (No payment made)</td>
-                      <td className="border border-gray-300 px-4 py-3">No refund needed</td>
-                    </tr>
-                  </tbody>
-                </table>
+            {/* Customer Support Method */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-5">
+              <h3 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                <Phone className="h-5 w-5 text-blue-600" />
+                Method 2: Contact Customer Support (After 1 Hour)
+              </h3>
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                  <div className="text-gray-700 text-sm">
+                    <p className="mb-1"><strong>Contact Options:</strong></p>
+                    <ul className="ml-4 space-y-1 text-sm">
+                      <li>• Email: <a href="mailto:support@cradlix.com" className="text-primary hover:underline">support@cradlix.com</a></li>
+                      <li>• Phone: <a href="tel:+911234567890" className="text-primary hover:underline">+91-1234567890</a> (Mon-Sat, 9 AM - 6 PM IST)</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                  <p className="text-gray-700 text-sm"><strong>Provide</strong> your Order ID, registered email, and contact number</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                  <p className="text-gray-700 text-sm"><strong>Mention</strong> reason for cancellation request</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">4</div>
+                  <p className="text-gray-700 text-sm"><strong>Wait</strong> for our team to verify order dispatch status</p>
+                </div>
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">5</div>
+                  <p className="text-gray-700 text-sm"><strong>Receive</strong> cancellation confirmation via email (if approved)</p>
+                </div>
               </div>
+              <p className="text-xs text-blue-800 mt-4 bg-blue-100 p-2 rounded">
+                ⏱️ <strong>Response Time:</strong> We respond to cancellation requests within 2-4 hours during business hours.
+              </p>
+            </div>
 
-              <Alert className="mt-6 border-green-200 bg-green-50">
-                <Info className="h-4 w-4 text-green-600" />
-                <AlertDescription className="ml-2 text-green-800">
-                  <strong>Note:</strong> Refund timelines may vary depending on your bank's processing time. You'll receive a confirmation email once the refund is initiated from our end.
-                </AlertDescription>
-              </Alert>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-2 text-sm flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Information Required for Cancellation:
+              </h4>
+              <ul className="space-y-1 text-sm text-gray-700 ml-6 list-disc">
+                <li>Order ID (found in confirmation email)</li>
+                <li>Registered email address or phone number</li>
+                <li>Reason for cancellation (optional but helpful)</li>
+              </ul>
             </div>
           </CardContent>
         </Card>
 
-        {/* Section 4: COD Order Cancellation */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-orange-500">
-          <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Ban className="h-6 w-6 text-orange-600" />
-              Cash on Delivery (COD) Orders
+        {/* Refund Process */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RefreshCw className="h-5 w-5 text-primary" />
+              4. Refund Process & Timeline
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <p className="text-gray-700">
-                Special cancellation rules apply to COD orders:
-              </p>
+          <CardContent className="space-y-4">
+            <p className="text-gray-700">
+              Once your cancellation request is approved, refunds are initiated according to the payment method used during purchase. All refunds are processed securely through Razorpay, our trusted payment gateway partner.
+            </p>
 
-              <div className="bg-orange-50 p-5 rounded-lg border border-orange-200">
-                <h3 className="font-bold text-lg mb-3 text-orange-900">COD Cancellation Benefits:</h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-600 mt-1">✓</span>
-                    <span><strong>Cancel anytime before delivery:</strong> No payment made yet, so easier cancellation</span>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Payment Method</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Refund Timeline</th>
+                    <th className="border border-gray-300 px-4 py-3 text-left font-semibold">Refund Destination</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">Credit Card</td>
+                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
+                    <td className="border border-gray-300 px-4 py-3">Original credit card</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">Debit Card</td>
+                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
+                    <td className="border border-gray-300 px-4 py-3">Original debit card/bank account</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">Net Banking</td>
+                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
+                    <td className="border border-gray-300 px-4 py-3">Original bank account</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">UPI (GPay, PhonePe, Paytm)</td>
+                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
+                    <td className="border border-gray-300 px-4 py-3">Source UPI ID/linked account</td>
+                  </tr>
+                  <tr className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">Digital Wallets</td>
+                    <td className="border border-gray-300 px-4 py-3">5-7 business days</td>
+                    <td className="border border-gray-300 px-4 py-3">Original wallet account</td>
+                  </tr>
+                  <tr className="bg-green-50">
+                    <td className="border border-gray-300 px-4 py-3 font-medium">Cash on Delivery (COD)</td>
+                    <td className="border border-gray-300 px-4 py-3">Not applicable</td>
+                    <td className="border border-gray-300 px-4 py-3">No refund (no payment made)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 mb-2 text-sm flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4" />
+                  What's Included in Refund
+                </h4>
+                <ul className="space-y-1 text-sm text-blue-800 ml-4 list-disc">
+                  <li>Full product price</li>
+                  <li>Applicable taxes</li>
+                  <li>Shipping charges (if paid)</li>
+                  <li>Promotional discounts maintained</li>
+                </ul>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h4 className="font-semibold text-amber-900 mb-2 text-sm flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  Possible Deductions
+                </h4>
+                <ul className="space-y-1 text-sm text-amber-800 ml-4 list-disc">
+                  <li>Bank processing charges (₹2-5)</li>
+                  <li>Razorpay payment gateway fees (minimal)</li>
+                  <li>Currency conversion fees (if applicable)</li>
+                </ul>
+              </div>
+            </div>
+
+            <Alert className="border-gray-300 bg-gray-50">
+              <Info className="h-4 w-4 text-gray-600" />
+              <AlertDescription className="text-gray-700 text-sm ml-2">
+                <strong>Please Note:</strong> Refund timelines depend on your bank's processing schedule. While we initiate refunds immediately, banks may take additional time to credit your account. If you don't receive your refund within the stated timeframe, please contact your bank first before reaching out to us.
+              </AlertDescription>
+            </Alert>
+          </CardContent>
+        </Card>
+
+        {/* COD Orders */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-primary" />
+              5. Cash on Delivery (COD) Orders
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-700">
+              COD orders have flexible cancellation options since payment hasn't been processed yet.
+            </p>
+
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-lg p-5">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-orange-600" />
+                COD Cancellation Options
+              </h3>
+              <div className="space-y-3 text-gray-700 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-600 mt-0.5">•</span>
+                  <p><strong>Before Dispatch:</strong> Cancel through your account or contact customer support</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-600 mt-0.5">•</span>
+                  <p><strong>After Dispatch:</strong> You can refuse the delivery at your doorstep</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-600 mt-0.5">•</span>
+                  <p><strong>At Delivery:</strong> Simply inform the delivery partner you're refusing the order</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-orange-600 mt-0.5">•</span>
+                  <p><strong>No Refund Needed:</strong> Since no payment was made, there's no refund process</p>
+                </div>
+              </div>
+            </div>
+
+            <Alert className="border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800 text-sm ml-2">
+                <strong>Fair Usage Policy:</strong> Excessive cancellations or refusals (more than 3 times in a 30-day period) may result in restrictions on future COD orders. We request customers to order responsibly to help us maintain this service for everyone.
+              </AlertDescription>
+            </Alert>
+
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="font-semibold text-gray-900 mb-2 text-sm">How Refusals Are Processed:</h4>
+              <ol className="space-y-1 text-sm text-gray-700 ml-5 list-decimal">
+                <li>Order is returned to our warehouse</li>
+                <li>We verify the product condition</li>
+                <li>Order status is updated to "Cancelled" in your account</li>
+                <li>You receive a confirmation email</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Non-Cancellable Items */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Ban className="h-5 w-5 text-primary" />
+              6. Non-Cancellable / Restricted Items
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-700">
+              Certain product categories may have specific cancellation restrictions due to their nature:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <h4 className="font-semibold text-red-900 mb-2">Personalized Products</h4>
+                <p className="text-sm text-gray-700">
+                  Items with custom names, engravings, or specific designs cannot be cancelled after production begins (typically 2 hours after order).
+                </p>
+              </div>
+
+              <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <h4 className="font-semibold text-red-900 mb-2">Combo Offers</h4>
+                <p className="text-sm text-gray-700">
+                  Bundle deals and combo packs cannot be partially cancelled. Entire order must be cancelled if needed.
+                </p>
+              </div>
+
+              <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <h4 className="font-semibold text-red-900 mb-2">Flash Sale Items</h4>
+                <p className="text-sm text-gray-700">
+                  Products bought during limited-time sales have reduced cancellation window (30 minutes only).
+                </p>
+              </div>
+
+              <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                <h4 className="font-semibold text-red-900 mb-2">Pre-Order Items</h4>
+                <p className="text-sm text-gray-700">
+                  Pre-ordered products can be cancelled up to 48 hours before expected dispatch date.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-600 bg-gray-100 p-3 rounded">
+              <strong>Note:</strong> Special cancellation terms, if applicable, will be clearly mentioned on the product page and during checkout.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Post-Cancellation */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-primary" />
+              7. After Cancellation Confirmation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-gray-700">
+              Once your cancellation is processed, here's what you can expect:
+            </p>
+
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-5">
+              <h3 className="font-bold text-gray-900 mb-3">You Will Receive:</h3>
+              <div className="space-y-2 text-gray-700 text-sm">
+                <div className="flex items-start gap-3">
+                  <Mail className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>Email Notification:</strong> Cancellation confirmation with reference number</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Phone className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>SMS Alert:</strong> Order cancellation update to your registered mobile</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <RefreshCw className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>Refund Initiation Email:</strong> Details about refund amount and timeline</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                  <p><strong>Account Update:</strong> Order status changed to "Cancelled" in your dashboard</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 mb-2 text-sm">Refund Breakdown</h4>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Product cost (100%)</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-600 mt-1">✓</span>
-                    <span><strong>Refuse at doorstep:</strong> Simply refuse to accept the order when delivery agent arrives</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Applicable taxes</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-600 mt-1">✓</span>
-                    <span><strong>No refund hassle:</strong> Since payment hasn't been made, no refund processing needed</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Shipping charges (if paid)</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-orange-600 mt-1">✓</span>
-                    <span><strong>Order automatically cancelled:</strong> Refused orders are marked as cancelled in system</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span>Discount/coupon value</span>
                   </li>
                 </ul>
               </div>
 
-              <Alert className="border-red-200 bg-red-50">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="ml-2 text-red-800">
-                  <strong>Important:</strong> Multiple cancellations or refusals (more than 3 in 30 days) may lead to restrictions on future COD orders. Please order responsibly.
-                </AlertDescription>
-              </Alert>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section 5: Non-Cancellable Items */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-red-500">
-          <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <XCircle className="h-6 w-6 text-red-600" />
-              Non-Cancellable Items
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <p className="text-gray-700 mb-4">
-                The following items cannot be cancelled once the order is confirmed:
-              </p>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <h4 className="font-semibold text-red-900 mb-2">Customized Products</h4>
-                  <p className="text-sm text-gray-700">
-                    Items with personalized names, engravings, or custom designs cannot be cancelled as they are made specifically for you.
-                  </p>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <h4 className="font-semibold text-red-900 mb-2">Combo/Bundle Packs</h4>
-                  <p className="text-sm text-gray-700">
-                    Special combo offers or bundle packs cannot be partially cancelled. You must cancel the entire order.
-                  </p>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <h4 className="font-semibold text-red-900 mb-2">Flash Sale Items</h4>
-                  <p className="text-sm text-gray-700">
-                    Products purchased during flash sales or limited-time offers may have stricter cancellation policies (cancellation window reduced to 30 minutes).
-                  </p>
-                </div>
-
-                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                  <h4 className="font-semibold text-red-900 mb-2">International Orders</h4>
-                  <p className="text-sm text-gray-700">
-                    Orders shipped internationally cannot be cancelled once customs documentation is prepared (usually within 24 hours).
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section 6: Cancellation Confirmation */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-blue-500">
-          <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <CheckCircle className="h-6 w-6 text-blue-600" />
-              What Happens After Cancellation?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-lg border border-blue-200">
-                <h3 className="font-bold text-lg mb-3 text-blue-900">You'll Receive:</h3>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-1">📧</span>
-                    <span><strong>Cancellation Confirmation Email:</strong> Sent immediately with cancellation ID</span>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <h4 className="font-semibold text-amber-900 mb-2 text-sm">Not Refunded</h4>
+                <ul className="space-y-1 text-sm text-gray-700">
+                  <li className="flex items-center gap-2">
+                    <span className="text-red-600">✗</span>
+                    <span>Razorpay gateway charges</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-1">📱</span>
-                    <span><strong>SMS Notification:</strong> Order cancellation alert to your registered mobile number</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-red-600">✗</span>
+                    <span>Bank processing fees</span>
                   </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-1">💳</span>
-                    <span><strong>Refund Confirmation Email:</strong> Once refund is initiated (with expected credit date)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-600 mt-1">📊</span>
-                    <span><strong>Account Dashboard Update:</strong> Order status changes to "Cancelled" in your account</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 p-5 rounded-lg border border-gray-300">
-                <h3 className="font-bold text-lg mb-3 text-gray-900">Refund Amount Details:</h3>
-                <p className="text-gray-700 mb-3">Your refund will include:</p>
-                <ul className="space-y-2 text-gray-700">
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-1">✓</span>
-                    <span>Product price (100% refunded)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-1">✓</span>
-                    <span>Shipping charges (if applicable)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-green-600 mt-1">✓</span>
-                    <span>Any discount or coupon value used</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-red-600 mt-1">✗</span>
-                    <span>Payment gateway charges (₹3-5) may be deducted by bank</span>
+                  <li className="flex items-center gap-2">
+                    <span className="text-red-600">✗</span>
+                    <span>Convenience charges (minimal)</span>
                   </li>
                 </ul>
               </div>
             </div>
+
+            <p className="text-xs text-gray-600 bg-gray-100 p-3 rounded">
+              <strong>Tracking Your Refund:</strong> You can monitor refund status in the "My Orders" section of your account. For queries, use the cancellation reference number provided in the confirmation email.
+            </p>
           </CardContent>
         </Card>
 
-        {/* Section 7: FAQ */}
-        <Card className="mb-6 shadow-lg border-t-4 border-t-indigo-500">
-          <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-            <CardTitle className="flex items-center gap-2 text-2xl">
-              <Info className="h-6 w-6 text-indigo-600" />
-              Frequently Asked Questions
+        {/* FAQ Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-primary" />
+              8. Frequently Asked Questions
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-5">
-              <div className="border-b border-gray-200 pb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Q: Can I modify my order instead of cancelling?</h4>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">Can I modify my order instead of cancelling it?</h4>
                 <p className="text-gray-700 text-sm">
-                  A: Yes! Within the first hour, you can modify your order (change address, add/remove items) by contacting customer support. After 1 hour, you'll need to cancel and place a new order.
+                  Yes, within the first hour you can modify shipping address or contact details by reaching our support team. For changes to products or quantities, you'll need to cancel and place a new order.
                 </p>
               </div>
 
-              <div className="border-b border-gray-200 pb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Q: What if I cancel multiple orders frequently?</h4>
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">What if I cancel multiple orders frequently?</h4>
                 <p className="text-gray-700 text-sm">
-                  A: We understand plans change! However, more than 5 cancellations in 30 days may trigger a review of your account. We may temporarily restrict COD orders to prevent abuse.
+                  While we understand plans change, frequent cancellations (more than 5 in 30 days) may trigger a review of your account. We may temporarily limit COD options to maintain service quality for all customers.
                 </p>
               </div>
 
-              <div className="border-b border-gray-200 pb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Q: My refund hasn't arrived. What should I do?</h4>
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">Can I cancel part of my order?</h4>
                 <p className="text-gray-700 text-sm">
-                  A: Refunds can take 5-7 business days. If it's been longer, please check with your bank first (sometimes they hold refunds). If still not received, contact us with your Order ID and cancellation confirmation email.
+                  Yes, partial cancellation is possible within 1 hour through your account dashboard. Select specific items you wish to cancel. After 1 hour, contact customer support for assistance.
                 </p>
               </div>
 
-              <div className="border-b border-gray-200 pb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Q: Can I cancel part of my order?</h4>
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">My refund hasn't arrived yet. What should I do?</h4>
                 <p className="text-gray-700 text-sm">
-                  A: Yes, partial cancellation is possible within the 1-hour window. Go to your order details and select specific items to cancel. After 1 hour, contact support for partial cancellations.
+                  Refunds typically take 5-7 business days after cancellation confirmation. If delayed, first check with your bank as they may require additional processing time. If still not received after 10 business days, contact us with your order details.
                 </p>
               </div>
 
-              <div className="pb-2">
-                <h4 className="font-semibold text-gray-900 mb-2">Q: Will I get my coupon code back after cancellation?</h4>
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">Will my coupon code be returned after cancellation?</h4>
                 <p className="text-gray-700 text-sm">
-                  A: Unfortunately, coupon codes are single-use and cannot be reissued. However, if you used a wallet or gift card, that amount will be credited back to your wallet within 24 hours.
+                  Single-use coupon codes cannot be reissued once applied. However, if you used store credit or gift cards, the amount will be restored to your account within 24 hours of cancellation.
+                </p>
+              </div>
+
+              <div className="border-l-4 border-primary/30 pl-4 py-2">
+                <h4 className="font-semibold text-gray-900 mb-1">Can I cancel an order placed using multiple payment methods?</h4>
+                <p className="text-gray-700 text-sm">
+                  Yes. When an order paid through multiple methods is cancelled, refunds are processed to each respective payment source proportionally.
                 </p>
               </div>
             </div>
@@ -480,55 +601,56 @@ export default function CancellationPolicyPage() {
         </Card>
 
         {/* Contact Section */}
-        <Card className="shadow-xl border-t-4 border-t-blue-600 bg-gradient-to-br from-blue-50 via-white to-purple-50">
-          <CardContent className="pt-8 pb-8">
+        <Card className="mb-6 border-2 border-primary/20">
+          <CardContent className="pt-6">
             <div className="text-center mb-6">
+              <Shield className="h-12 w-12 text-primary mx-auto mb-3" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Need Help with Cancellation?
+                Need Assistance with Cancellation?
               </h2>
               <p className="text-gray-600">
-                Our customer support team is here to assist you
+                Our customer support team is ready to help you
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto mb-6">
               <a 
-                href="mailto:support@babyproducts.com"
-                className="flex items-center gap-4 p-5 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-all hover:shadow-lg group"
+                href="mailto:support@cradlix.com"
+                className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border-2 border-blue-200 hover:border-blue-400 transition-all hover:shadow-md group"
               >
                 <div className="bg-blue-100 p-3 rounded-full group-hover:bg-blue-200 transition-colors">
-                  <Mail className="h-6 w-6 text-blue-600" />
+                  <Mail className="h-5 w-5 text-blue-600" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Email Support</p>
-                  <p className="text-sm text-gray-600">support@babyproducts.com</p>
-                  <p className="text-xs text-gray-500 mt-1">Response within 2-4 hours</p>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 text-sm">Email Support</p>
+                  <p className="text-xs text-gray-600">support@cradlix.com</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Response within 2-4 hours</p>
                 </div>
               </a>
 
               <a 
                 href="tel:+911234567890"
-                className="flex items-center gap-4 p-5 bg-white rounded-lg border-2 border-green-200 hover:border-green-400 transition-all hover:shadow-lg group"
+                className="flex items-center gap-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-200 hover:border-green-400 transition-all hover:shadow-md group"
               >
                 <div className="bg-green-100 p-3 rounded-full group-hover:bg-green-200 transition-colors">
-                  <Phone className="h-6 w-6 text-green-600" />
+                  <Phone className="h-5 w-5 text-green-600" />
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">Phone Support</p>
-                  <p className="text-sm text-gray-600">+91-1234567890</p>
-                  <p className="text-xs text-gray-500 mt-1">Mon-Sat, 9 AM - 6 PM IST</p>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-900 text-sm">Phone Support</p>
+                  <p className="text-xs text-gray-600">+91-1234567890</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Mon-Sat, 9 AM - 6 PM IST</p>
                 </div>
               </a>
             </div>
 
-            <div className="flex justify-center gap-4 mt-8">
-              <Button asChild variant="outline" className="border-2">
-                <Link href="/faqs">View FAQs</Link>
+            <div className="flex flex-wrap justify-center gap-3">
+              <Button asChild variant="outline" size="sm">
+                <Link href="/faqs">View All FAQs</Link>
               </Button>
-              <Button asChild variant="outline" className="border-2">
-                <Link href="/refund-request">Request Refund</Link>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/shipping-policy">Shipping Policy</Link>
               </Button>
-              <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Button asChild size="sm">
                 <Link href="/account">My Orders</Link>
               </Button>
             </div>
@@ -536,17 +658,21 @@ export default function CancellationPolicyPage() {
         </Card>
 
         {/* Footer Note */}
-        <div className="mt-8 text-center text-sm text-gray-600 bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <p className="mb-2">
-            <strong>Note:</strong> This cancellation policy is subject to change. We recommend reviewing it periodically.
+        <div className="bg-gray-100 border border-gray-200 rounded-lg p-6 text-center text-sm text-gray-700">
+          <p className="mb-3">
+            <strong>Policy Updates:</strong> This cancellation policy is effective as of the last updated date mentioned above and may be modified at any time. We recommend reviewing this page periodically for any changes.
           </p>
-          <p>
-            By placing an order on our website, you agree to our{' '}
-            <Link href="/terms-conditions" className="text-blue-600 hover:underline font-medium">
+          <p className="text-xs">
+            By placing an order on our platform, you acknowledge that you have read, understood, and agree to this Cancellation Policy along with our{' '}
+            <Link href="/terms-conditions" className="text-primary hover:underline font-medium">
               Terms & Conditions
             </Link>
-            {' '}and{' '}
-            <Link href="/privacy-policy" className="text-blue-600 hover:underline font-medium">
+            {', '}
+            <Link href="/shipping-policy" className="text-primary hover:underline font-medium">
+              Shipping Policy
+            </Link>
+            {', and '}
+            <Link href="/privacy-policy" className="text-primary hover:underline font-medium">
               Privacy Policy
             </Link>
             .
@@ -556,3 +682,4 @@ export default function CancellationPolicyPage() {
     </div>
   );
 }
+

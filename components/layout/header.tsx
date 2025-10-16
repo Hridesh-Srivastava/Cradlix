@@ -33,7 +33,7 @@ export function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center space-x-2">
           <Baby className="h-8 w-8 text-primary" />
-          <span className="text-xl font-bold">Baby Store</span>
+          <span className="text-xl font-bold">Cradlix</span>
         </Link>
 
         {/* Desktop Navigation */}

@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 export const metadata = {
-  title: 'Shipping Policy - Baby Store',
+  title: 'Shipping Policy - Cradlix',
   description: 'Learn about our shipping methods, delivery times, charges, and tracking options.',
 }
 
@@ -337,17 +337,29 @@ export default function ShippingPolicyPage() {
           </CardContent>
         </Card>
 
-        {/* Cash on Delivery */}
+        {/* Payment Methods */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <IndianRupee className="h-5 w-5 text-primary" />
-              6. Cash on Delivery (COD)
+              6. Payment Methods & COD
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">COD Availability</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">Secure Online Payments</h3>
+              <p className="text-gray-700 mb-3">
+                We use Razorpay as our payment gateway partner to process all online transactions securely. You can pay using Credit Cards, Debit Cards, Net Banking, UPI, and Digital Wallets with complete peace of mind.
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  🔒 <strong>100% Secure:</strong> All payments are encrypted and PCI DSS compliant through Razorpay's secure infrastructure.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">Cash on Delivery (COD) Availability</h3>
               <p className="text-gray-700 mb-3">
                 Cash on Delivery is available for eligible orders. You can pay in cash at the time of delivery.
               </p>
@@ -437,7 +449,7 @@ export default function ShippingPolicyPage() {
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p className="text-sm text-amber-900 flex items-start gap-2">
                 <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span><strong>Damaged Package?</strong> If you receive a damaged package, please refuse delivery or take photos/videos before opening. Contact us immediately at support@babystore.com for replacement.</span>
+                <span><strong>Damaged Package?</strong> If you receive a damaged package, please refuse delivery or take photos/videos before opening. Contact us immediately at support@cradlix.com for replacement.</span>
               </p>
             </div>
           </CardContent>
@@ -519,8 +531,8 @@ export default function ShippingPolicyPage() {
                 <Mail className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-gray-900">Email Support</p>
-                  <a href="mailto:support@babystore.com" className="text-primary hover:underline">
-                    support@babystore.com
+                  <a href="mailto:support@cradlix.com" className="text-primary hover:underline">
+                    support@cradlix.com
                   </a>
                   <p className="text-xs text-gray-600 mt-1">Response within 24 hours</p>
                 </div>
@@ -552,7 +564,7 @@ export default function ShippingPolicyPage() {
         {/* Footer Note */}
         <div className="text-center text-sm text-gray-600 py-6 border-t">
           <p className="mb-2">
-            This shipping policy is effective as of October 16, 2025 and applies to all orders placed on Baby Store.
+            This shipping policy is effective as of October 16, 2025 and applies to all orders placed on Cradlix.
           </p>
           <p>
             We reserve the right to modify this policy at any time. Changes will be posted on this page.

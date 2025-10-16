@@ -32,7 +32,7 @@ export function AdminSidebar() {
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
             <Package className="h-5 w-5 text-primary-foreground" />
           </div>
-          <h2 className="text-xl font-bold">Baby Store Admin</h2>
+          <h2 className="text-xl font-bold">Cradlix Admin</h2>
         </div>
       </div>
 

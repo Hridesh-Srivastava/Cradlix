@@ -24,7 +24,6 @@ const footerLinks = {
     { name: "Privacy Policy", href: "/privacy-policy" },
     { name: "Terms & Conditions", href: "/terms-conditions" },
     { name: "FAQs", href: "/faqs" },
-    { name: "Refund Policy", href: "/refund" },
   ],
   categories: [
     { name: "Baby Toys", href: "/categories/toys" },
@@ -77,7 +76,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <Link href="/" className="flex items-center space-x-2 mb-4">
               <Baby className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">Baby Store</span>
+              <span className="text-xl font-bold">Cradlix</span>
             </Link>
             <p className="text-muted-foreground mb-4 max-w-md">
               Your trusted partner for premium baby products and toys. Safe, high-quality, and affordable products for
@@ -168,7 +167,7 @@ export function Footer() {
 
         {/* Bottom Section */}
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-muted-foreground text-sm">© 2024 Baby Store. All rights reserved.</p>
+          <p className="text-muted-foreground text-sm">© {new Date().getFullYear()} Cradlix. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             {footerLinks.legal.map((link) => (
               <Link

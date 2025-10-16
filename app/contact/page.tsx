@@ -242,7 +242,7 @@ export default function ContactPage() {
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Baby Store Location - Dehradun"
+                    title="Cradlix Location - Dehradun"
                   />
                 </div>
               </CardContent>
