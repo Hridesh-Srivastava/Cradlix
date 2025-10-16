@@ -7,7 +7,6 @@ export async function initializeDatabases() {
     mongodb: { connected: false, error: null as any },
   }
 
-  // Test PostgreSQL connection
   try {
     const pgResult = await checkDatabaseConnection()
     results.postgres.connected = pgResult.success
@@ -18,7 +17,6 @@ export async function initializeDatabases() {
     results.postgres.error = error
   }
 
-  // Test MongoDB connection
   try {
     await connectMongoDB()
     results.mongodb.connected = true
@@ -32,7 +30,6 @@ export async function initializeDatabases() {
 export async function validateEnvironmentVariables() {
   const required = ["MONGODB_URI", "NEXTAUTH_SECRET"]
 
-  // NEXTAUTH_URL is only required in production
   if (process.env.NODE_ENV === "production") {
     required.push("NEXTAUTH_URL")
   }
@@ -48,10 +45,9 @@ export async function validateEnvironmentVariables() {
 
 export async function healthCheck() {
   try {
-    // Validate environment variables
     await validateEnvironmentVariables()
 
-    // Check database connections
+
     const dbStatus = await initializeDatabases()
 
     const isHealthy = dbStatus.postgres.connected && dbStatus.mongodb.connected
