@@ -111,7 +111,7 @@ export function renderAdminRefundRequestHtml(data: {
     
     <p style="color:#666;margin-top:16px;font-size:13px">
       <strong>Note:</strong> This email includes an updated Excel sheet of all refund requests as an attachment. 
-      Please process this request within 2-3 business days as per our refund policy.
+      Please process this request within 5-7 business days as per our refund policy.
     </p>
     
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid #eee">
@@ -146,16 +146,16 @@ export function renderUserRefundThankYouHtml(name: string, refundAmount: number,
     <h3 style="color:#111;font-size:16px;margin:24px 0 12px">What happens next?</h3>
     
     <div style="border-left:3px solid #3b82f6;padding-left:16px;margin:16px 0">
-      <p style="margin:8px 0;color:#374151"><strong>1. Review (2-3 business days)</strong><br/>
+      <p style="margin:8px 0;color:#374151"><strong>1. Review (5-7 business days)</strong><br/>
       <span style="color:#6b7280;font-size:14px">Our team will review your refund request and verify the payment details.</span></p>
       
-      <p style="margin:8px 0;color:#374151"><strong>2. Processing (1-2 business days)</strong><br/>
+      <p style="margin:8px 0;color:#374151"><strong>2. Processing (within review period)</strong><br/>
       <span style="color:#6b7280;font-size:14px">Once approved, we'll initiate the refund through Razorpay to your original payment method.</span></p>
       
       <p style="margin:8px 0;color:#374151"><strong>3. Credit to Account</strong><br/>
       <span style="color:#6b7280;font-size:14px">
-        • Credit/Debit Card: 5-10 business days<br/>
-        • UPI/Wallet: 3-5 business days<br/>
+        • Credit/Debit Card: 5-7 business days<br/>
+        • UPI/Wallet: 5-7 business days<br/>
         • Net Banking: 5-7 business days
       </span></p>
     </div>

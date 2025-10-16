@@ -17,8 +17,8 @@ const footerLinks = {
   support: [
     { name: "Help Center", href: "/help" },
     { name: "Refund Request", href: "/refund-request" },
-    { name: "Shipping Info", href: "/shipping" },
-    { name: "Returns", href: "/returns" },
+    { name: "Shipping Policy", href: "/shipping-policy" },
+    { name: "Cancellation Policy", href: "/cancellation-policy" },
   ],
   legal: [
     { name: "Privacy Policy", href: "/privacy-policy" },

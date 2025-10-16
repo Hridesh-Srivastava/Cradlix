@@ -257,7 +257,7 @@ export default function TermsConditionsPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">5.3 Shipping Charges</h3>
               <p className="text-gray-700">
-                Free shipping on orders above ₹999. Standard shipping (₹99) and Express shipping (₹199) charges apply for orders below ₹999.
+                Free shipping on orders above ₹399. Standard shipping (₹99) and Express shipping (₹199) charges apply for orders below ₹399.
               </p>
             </div>
 

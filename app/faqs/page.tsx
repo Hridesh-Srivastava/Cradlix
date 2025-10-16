@@ -27,7 +27,7 @@ const faqs: FAQ[] = [
   {
     id: 2,
     question: "What are the shipping charges?",
-    answer: "We offer free shipping on orders above ₹999. For orders below ₹999, standard shipping costs ₹99 and express shipping costs ₹199. Shipping is calculated at checkout based on your location and chosen delivery speed.",
+    answer: "We offer free shipping on orders above ₹399. For orders below ₹399, standard shipping costs ₹99 and express shipping costs ₹199. Shipping is calculated at checkout based on your location and chosen delivery speed.",
     category: "Shipping & Delivery",
     icon: <Truck className="h-5 w-5" />
   },
@@ -57,14 +57,14 @@ const faqs: FAQ[] = [
   {
     id: 6,
     question: "How do I return a product?",
-    answer: "To return a product: 1) Log into your account and go to 'My Orders', 2) Select the order and click 'Return Item', 3) Choose a reason for return and upload photos if applicable, 4) We'll arrange a free pickup within 2-3 business days. Once we receive and inspect the item, your refund will be processed.",
+    answer: "To return a product: 1) Log into your account and go to 'My Orders', 2) Select the order and click 'Return Item', 3) Choose a reason for return and upload photos if applicable, 4) We'll arrange a free pickup within 5-7 business days. Once we receive and inspect the item, your refund will be processed.",
     category: "Returns & Refunds",
     icon: <RefreshCw className="h-5 w-5" />
   },
   {
     id: 7,
     question: "When will I receive my refund?",
-    answer: "Refunds are processed within 5-7 business days after we receive and inspect the returned item. The amount will be credited to your original payment method. For prepaid orders, refunds appear in your account within 5-10 business days depending on your bank. For COD orders, we'll transfer the amount to your bank account.",
+    answer: "Refunds are processed within 5-7 business days after we receive and inspect the returned item. The amount will be credited to your original payment method. For prepaid orders, refunds appear in your account within 5-7 business days depending on your bank. For COD orders, we'll transfer the amount to your bank account.",
     category: "Returns & Refunds",
     icon: <CreditCard className="h-5 w-5" />
   },

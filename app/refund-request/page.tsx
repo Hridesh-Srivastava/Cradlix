@@ -306,7 +306,7 @@ export default function RefundRequestPage() {
 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-1">Processing Time</h4>
-                  <p>We review all refund requests within 2-3 business days. Once approved, refunds are initiated through Razorpay and credited as per the timeline above.</p>
+                  <p>We review all refund requests within 5-7 business days. Once approved, refunds are initiated through Razorpay and credited as per the timeline above.</p>
                 </div>
 
                 <div>

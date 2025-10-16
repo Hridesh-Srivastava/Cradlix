@@ -163,7 +163,7 @@ export default function PrivacyPolicyPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">3.5 Refund Information</h3>
               <p className="text-gray-700">
-                For refunds, Razorpay processes the refund back to your original payment method. Refund timelines depend on your bank and typically take 5-10 business days.
+                For refunds, Razorpay processes the refund back to your original payment method. Refund timelines depend on your bank and typically take 5-7 business days.
               </p>
             </div>
           </CardContent>
