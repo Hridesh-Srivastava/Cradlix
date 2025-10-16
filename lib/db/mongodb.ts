@@ -116,12 +116,31 @@ const searchQuerySchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now },
 })
 
+// Refund queries schema
+const refundQuerySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  phone: { type: String, required: true },
+  paymentId: { type: String, required: true },
+  subject: { type: String, required: true },
+  refundAmount: { type: Number, required: true },
+  complaint: { type: String, required: true },
+  status: { type: String, enum: ["pending", "under_review", "approved", "rejected", "processed"], default: "pending" },
+  ipAddress: String,
+  userAgent: String,
+  adminNotes: String,
+  processedAt: Date,
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+})
+
 // Export models
 export const ContactForm = mongoose.models.ContactForm || mongoose.model("ContactForm", contactFormSchema)
 export const Newsletter = mongoose.models.Newsletter || mongoose.model("Newsletter", newsletterSchema)
 export const AnalyticsEvent = mongoose.models.AnalyticsEvent || mongoose.model("AnalyticsEvent", analyticsEventSchema)
 export const Feedback = mongoose.models.Feedback || mongoose.model("Feedback", feedbackSchema)
 export const SearchQuery = mongoose.models.SearchQuery || mongoose.model("SearchQuery", searchQuerySchema)
+export const RefundQuery = mongoose.models.RefundQuery || mongoose.model("RefundQuery", refundQuerySchema)
 
 // Pending registration schema (for OTP verification before creating SQL user)
 const pendingRegistrationSchema = new mongoose.Schema({
@@ -182,6 +201,17 @@ export async function subscribeToNewsletter(email: string, source?: string) {
     return subscription
   } catch (error) {
     console.error("Failed to subscribe to newsletter:", error)
+    throw error
+  }
+}
+
+export async function saveRefundQuery(queryData: any) {
+  try {
+    await connectMongoDB()
+    const refundQuery = new RefundQuery(queryData)
+    return await refundQuery.save()
+  } catch (error) {
+    console.error("Failed to save refund query:", error)
     throw error
   }
 }

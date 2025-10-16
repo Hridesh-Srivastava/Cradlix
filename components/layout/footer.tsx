@@ -16,14 +16,14 @@ const footerLinks = {
   ],
   support: [
     { name: "Help Center", href: "/help" },
-    { name: "Safety", href: "/safety" },
+    { name: "Refund Request", href: "/refund-request" },
     { name: "Shipping Info", href: "/shipping" },
     { name: "Returns", href: "/returns" },
   ],
   legal: [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Cookie Policy", href: "/cookies" },
+    { name: "Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms & Conditions", href: "/terms-conditions" },
+    { name: "FAQs", href: "/faqs" },
     { name: "Refund Policy", href: "/refund" },
   ],
   categories: [

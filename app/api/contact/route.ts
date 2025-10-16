@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
     const session = await auth().catch(() => null)
   const body = await req.json().catch(() => ({}))
-  const { name, email, subject, message, captchaToken } = body || {}
+  const { name, email, phone, subject, message, captchaToken } = body || {}
     // Verify captcha
     const check = await verifyRecaptcha(captchaToken, 'contact')
     if (!check.success || (typeof check.score === 'number' && check.score < 0.5)) {
@@ -51,6 +51,7 @@ export async function POST(req: Request) {
     const saved = await saveContactForm({
       name,
       email,
+      phone: phone || "",
       subject: subject || "",
       message,
       ipAddress,
@@ -65,6 +66,7 @@ export async function POST(req: Request) {
     ws.columns = [
       { header: "Name", key: "name", width: 24 },
       { header: "Email", key: "email", width: 28 },
+      { header: "Phone", key: "phone", width: 18 },
       { header: "Subject", key: "subject", width: 28 },
       { header: "Message", key: "message", width: 50 },
       { header: "Status", key: "status", width: 12 },
@@ -76,6 +78,7 @@ export async function POST(req: Request) {
       ws.addRow({
         name: r.name,
         email: r.email,
+        phone: r.phone || "",
         subject: r.subject || "",
         message: r.message,
         status: r.status,
@@ -95,7 +98,7 @@ export async function POST(req: Request) {
         from,
         to: adminTo,
         subject: `New contact: ${name} <${email}>`,
-        html: renderAdminContactHtml({ name, email, subject, message }),
+        html: renderAdminContactHtml({ name, email, phone, subject, message }),
         attachments: [
           {
             filename: "contact_submissions.xlsx",

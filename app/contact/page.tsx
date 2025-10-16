@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from '@/hooks/use-toast'
-import { Mail, Phone, MapPin, Clock, Send, CheckCircle2 } from 'lucide-react'
+import { Mail, Phone, MapPin, Clock, Send, CheckCircle2, HelpCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useRecaptcha } from '@/hooks/use-recaptcha'
+import Link from 'next/link'
 
 export default function ContactPage() {
   const { toast } = useToast()
@@ -18,6 +19,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: '',
   })
@@ -56,7 +58,7 @@ export default function ContactPage() {
         description: "We'll get back to you within 24 hours.",
       })
 
-  setFormData({ name: '', email: '', subject: '', message: '' })
+  setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
   setSent({ name: formData.name })
     } catch (error) {
       toast({
@@ -99,48 +101,63 @@ export default function ContactPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor="name">Name *</Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="Your full name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email *</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="your.email@example.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone">Phone Number (Optional)</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+91 98765 43210"
+                  />
                 </div>
                 
                 <div>
-                  <Label htmlFor="subject">Subject</Label>
+                  <Label htmlFor="subject">Subject *</Label>
                   <Input
                     id="subject"
                     name="subject"
                     value={formData.subject}
                     onChange={handleInputChange}
+                    placeholder="How can we help you?"
                     required
                   />
                 </div>
                 
                 <div>
-                  <Label htmlFor="message">Message</Label>
+                  <Label htmlFor="message">Message / Query *</Label>
                   <Textarea
                     id="message"
                     name="message"
                     value={formData.message}
                     onChange={handleInputChange}
+                    placeholder="Please describe your query in detail..."
                     rows={6}
                     required
                   />
@@ -189,7 +206,8 @@ export default function ContactPage() {
                     <p className="font-medium">Address</p>
                     <p className="text-gray-600">
                       123 Baby Street<br />
-                      Mumbai, Maharashtra 400001<br />
+                      Rajpur Road, Dehradun<br />
+                      Uttarakhand 248001<br />
                       India
                     </p>
                   </div>
@@ -209,30 +227,43 @@ export default function ContactPage() {
               </CardContent>
             </Card>
 
+            {/* Google Maps */}
             <Card>
               <CardHeader>
-                <CardTitle>Frequently Asked Questions</CardTitle>
+                <CardTitle>Find Us</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-1">How long does shipping take?</h4>
-                  <p className="text-sm text-gray-600">
-                    Standard shipping takes 3-5 business days. Express shipping is available for 1-2 days.
-                  </p>
+              <CardContent className="p-0">
+                <div className="w-full h-[300px] rounded-b-lg overflow-hidden">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13773.441486634965!2d78.03126583955078!3d30.31544699999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3908d0cfa61cda5b%3A0x147be5b96e79c86!2sRajpur%20Rd%2C%20Dehradun%2C%20Uttarakhand!5e0!3m2!1sen!2sin!4v1697198400000!5m2!1sen!2sin"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Baby Store Location - Dehradun"
+                  />
                 </div>
-                
-                <div>
-                  <h4 className="font-medium mb-1">What is your return policy?</h4>
-                  <p className="text-sm text-gray-600">
-                    We offer a 30-day return policy for unused items in original packaging.
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-1">Do you offer international shipping?</h4>
-                  <p className="text-sm text-gray-600">
-                    Currently, we only ship within India. International shipping coming soon!
-                  </p>
+              </CardContent>
+            </Card>
+
+            {/* FAQs Link */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="py-6">
+                <div className="flex items-start gap-4">
+                  <HelpCircle className="h-6 w-6 text-primary mt-1" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg mb-2">Need Quick Answers?</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Check out our comprehensive FAQ section for instant answers to common questions.
+                    </p>
+                    <Link href="/faqs">
+                      <Button variant="outline" className="w-full">
+                        View All FAQs
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>
