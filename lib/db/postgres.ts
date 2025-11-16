@@ -36,11 +36,14 @@ if (!connectionString) {
   throw new Error("DATABASE_URL or POSTGRES_URL environment variable is required")
 }
 
-// Create postgres client
+// Create postgres client with Supabase-optimized settings
 const client = postgres(connectionString, {
-  max: 10,
-  idle_timeout: 20,
-  connect_timeout: 10,
+  max: 10, // Maximum connections in pool
+  idle_timeout: 20, // Close idle connections after 20s
+  connect_timeout: 10, // Connection timeout in seconds
+  // Supabase compatibility
+  ssl: connectionString.includes('supabase.com') ? { rejectUnauthorized: false } : undefined,
+  prepare: false, // Disable prepared statements for better compatibility with poolers
 })
 
 // Create drizzle instance

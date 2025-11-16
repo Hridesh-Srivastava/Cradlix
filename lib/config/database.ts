@@ -4,9 +4,15 @@ import { MongoClient } from "mongodb"
 import mongoose from "mongoose"
 
 // PostgreSQL connection for main ecommerce data
+// Supabase-compatible configuration
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+  ssl: process.env.NODE_ENV === "production" || process.env.DATABASE_URL?.includes('supabase.com') 
+    ? { rejectUnauthorized: false } 
+    : false,
+  max: 20, // Maximum pool size for Supabase
+  idleTimeoutMillis: 30000, // Close idle connections after 30s
+  connectionTimeoutMillis: 10000, // Connection timeout
 })
 
 export const db = drizzle(pool)

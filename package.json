@@ -20,7 +20,9 @@
     "db:migrate": "drizzle-kit push:pg",
     "db:migrate-new": "tsx scripts/migrate-new-tables.ts",
     "db:generate": "drizzle-kit generate:pg",
-    "db:create-addresses": "tsx scripts/create-user-addresses-table.ts"
+    "db:create-addresses": "tsx scripts/create-user-addresses-table.ts",
+    "supabase:test": "tsx scripts/test-supabase-connection.ts",
+    "supabase:migrate-data": "tsx scripts/migrate-data-to-supabase.ts"
   },
   "dependencies": {
     "@auth/core": "^0.40.0",
@@ -78,7 +80,6 @@
     "cmdk": "1.0.4",
     "date-fns": "4.1.0",
     "dotenv": "^16.4.5",
-    "drizzle-kit": "^0.18.1",
     "drizzle-orm": "^0.44.5",
     "embla-carousel-react": "8.5.1",
     "exceljs": "^4.4.0",
@@ -116,6 +117,7 @@
     "@types/nodemailer": "^7.0.2",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
+    "drizzle-kit": "^0.31.7",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.9",
     "tsx": "^4.19.2",
