@@ -57,6 +57,7 @@ export function ComprehensiveCheckout() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [loadingCart, setLoadingCart] = useState(true)
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false)
 
   const subtotal = cartItems.reduce((sum, item) => sum + Number(item.product.price) * item.quantity, 0)
   const shippingCost = subtotal > 500 ? 0 : 50
@@ -76,9 +77,11 @@ export function ComprehensiveCheckout() {
     script.async = true
     script.onload = () => {
       console.log('Razorpay SDK loaded successfully')
+      setRazorpayLoaded(true)
     }
     script.onerror = () => {
       console.error('Failed to load Razorpay SDK')
+      toast.error('Failed to load payment gateway. Please refresh the page.')
     }
     document.body.appendChild(script)
 
@@ -362,16 +365,18 @@ export function ComprehensiveCheckout() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <RadioGroup value={paymentMethod} onValueChange={(value) => setPaymentMethod(value as "razorpay" | "cod")}>
-                    <Card className="cursor-pointer hover:bg-accent/50 transition-colors">
+                    <Card className={`cursor-pointer hover:bg-accent/50 transition-colors ${!razorpayLoaded ? 'opacity-50' : ''}`}>
                       <CardContent className="p-4">
                         <div className="flex items-center space-x-3">
-                          <RadioGroupItem value="razorpay" id="razorpay" />
-                          <Label htmlFor="razorpay" className="flex-1 cursor-pointer">
+                          <RadioGroupItem value="razorpay" id="razorpay" disabled={!razorpayLoaded} />
+                          <Label htmlFor="razorpay" className={`flex-1 ${razorpayLoaded ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                             <div className="flex items-center gap-3">
                               <CreditCard className="h-5 w-5 text-primary" />
                               <div>
                                 <p className="font-medium">Card / UPI / Net Banking</p>
-                                <p className="text-sm text-muted-foreground">Pay securely with Razorpay</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {razorpayLoaded ? 'Pay securely with Razorpay' : 'Loading payment gateway...'}
+                                </p>
                               </div>
                             </div>
                           </Label>
@@ -502,11 +507,21 @@ export function ComprehensiveCheckout() {
                   <Button variant="outline" onClick={() => setCurrentStep("payment")}>
                     Back to Payment
                   </Button>
-                  <Button onClick={handlePlaceOrder} disabled={isProcessing} size="lg" className="min-w-[200px]">
+                  <Button 
+                    onClick={handlePlaceOrder} 
+                    disabled={isProcessing || (paymentMethod === 'razorpay' && !razorpayLoaded)} 
+                    size="lg" 
+                    className="min-w-[200px]"
+                  >
                     {isProcessing ? (
                       <>
                         <LoadingSpinner className="mr-2 h-4 w-4" />
                         Processing...
+                      </>
+                    ) : (paymentMethod === 'razorpay' && !razorpayLoaded) ? (
+                      <>
+                        <LoadingSpinner className="mr-2 h-4 w-4" />
+                        Loading Payment...
                       </>
                     ) : (
                       <>
