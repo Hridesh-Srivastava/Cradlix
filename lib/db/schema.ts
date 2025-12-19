@@ -442,6 +442,155 @@ export const wishlistItems = pgTable("wishlist_items", {
   userProductIdx: index("wishlist_user_product_idx").on(table.userId, table.productId),
 }))
 
+// Store Requests table - For vendor registration applications
+export const storeRequests = pgTable("store_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  
+  // Business Information
+  businessName: varchar("business_name", { length: 255 }).notNull(),
+  businessType: varchar("business_type", { length: 100 }).notNull(), // sole_proprietorship, partnership, llp, private_limited, etc.
+  businessCategory: varchar("business_category", { length: 100 }).notNull(),
+  gstNumber: varchar("gst_number", { length: 15 }),
+  panNumber: varchar("pan_number", { length: 10 }),
+  
+  // Contact Information
+  contactPersonName: varchar("contact_person_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  alternatePhone: varchar("alternate_phone", { length: 20 }),
+  
+  // Business Address
+  addressLine1: varchar("address_line_1", { length: 255 }).notNull(),
+  addressLine2: varchar("address_line_2", { length: 255 }),
+  city: varchar("city", { length: 100 }).notNull(),
+  state: varchar("state", { length: 100 }).notNull(),
+  postalCode: varchar("postal_code", { length: 20 }).notNull(),
+  country: varchar("country", { length: 100 }).default("India"),
+  
+  // Business Documents (Cloudinary URLs)
+  businessLogo: text("business_logo"),
+  gstCertificate: text("gst_certificate"),
+  panCard: text("pan_card"),
+  businessRegistration: text("business_registration"),
+  addressProof: text("address_proof"),
+  
+  // Bank Details
+  bankName: varchar("bank_name", { length: 255 }),
+  accountNumber: varchar("account_number", { length: 50 }),
+  ifscCode: varchar("ifsc_code", { length: 11 }),
+  accountHolderName: varchar("account_holder_name", { length: 255 }),
+  cancelledCheque: text("cancelled_cheque"), // Cloudinary URL
+  
+  // Social Media & Website
+  websiteUrl: varchar("website_url", { length: 500 }),
+  facebookUrl: varchar("facebook_url", { length: 500 }),
+  instagramUrl: varchar("instagram_url", { length: 500 }),
+  twitterUrl: varchar("twitter_url", { length: 500 }),
+  
+  // Additional Information
+  businessDescription: text("business_description"),
+  yearsInBusiness: integer("years_in_business"),
+  expectedMonthlyRevenue: varchar("expected_monthly_revenue", { length: 50 }),
+  productCategories: text("product_categories").array(), // Array of category slugs/names
+  
+  // Request Status
+  status: varchar("status", { length: 50 }).default("pending").notNull(), // pending, approved, rejected
+  rejectionReason: text("rejection_reason"),
+  adminNotes: text("admin_notes"),
+  reviewedBy: uuid("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  
+  // Terms Acceptance
+  agreedToTerms: boolean("agreed_to_terms").default(false).notNull(),
+  agreedToCommission: boolean("agreed_to_commission").default(false).notNull(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("idx_store_requests_user_id").on(table.userId),
+  statusIdx: index("idx_store_requests_status").on(table.status),
+  emailIdx: index("idx_store_requests_email").on(table.email),
+}))
+
+// Stores table - Approved vendor stores
+export const stores = pgTable("stores", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  requestId: uuid("request_id").references(() => storeRequests.id),
+  
+  // Business Information (copied from approved request)
+  businessName: varchar("business_name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  businessType: varchar("business_type", { length: 100 }).notNull(),
+  businessCategory: varchar("business_category", { length: 100 }).notNull(),
+  gstNumber: varchar("gst_number", { length: 15 }),
+  panNumber: varchar("pan_number", { length: 10 }),
+  
+  // Contact Information
+  contactPersonName: varchar("contact_person_name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 20 }).notNull(),
+  alternatePhone: varchar("alternate_phone", { length: 20 }),
+  
+  // Business Address
+  addressLine1: varchar("address_line_1", { length: 255 }).notNull(),
+  addressLine2: varchar("address_line_2", { length: 255 }),
+  city: varchar("city", { length: 100 }).notNull(),
+  state: varchar("state", { length: 100 }).notNull(),
+  postalCode: varchar("postal_code", { length: 20 }).notNull(),
+  country: varchar("country", { length: 100 }).default("India"),
+  
+  // Business Documents
+  businessLogo: text("business_logo"),
+  gstCertificate: text("gst_certificate"),
+  panCard: text("pan_card"),
+  businessRegistration: text("business_registration"),
+  addressProof: text("address_proof"),
+  
+  // Bank Details
+  bankName: varchar("bank_name", { length: 255 }),
+  accountNumber: varchar("account_number", { length: 50 }),
+  ifscCode: varchar("ifsc_code", { length: 11 }),
+  accountHolderName: varchar("account_holder_name", { length: 255 }),
+  cancelledCheque: text("cancelled_cheque"),
+  
+  // Social Media & Website
+  websiteUrl: varchar("website_url", { length: 500 }),
+  facebookUrl: varchar("facebook_url", { length: 500 }),
+  instagramUrl: varchar("instagram_url", { length: 500 }),
+  twitterUrl: varchar("twitter_url", { length: 500 }),
+  
+  // Store Description
+  businessDescription: text("business_description"),
+  yearsInBusiness: integer("years_in_business"),
+  productCategories: text("product_categories").array(),
+  
+  // Store Status & Settings
+  isActive: boolean("is_active").default(true),
+  isFeatured: boolean("is_featured").default(false),
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).default("10.00"), // Platform commission %
+  
+  // Store Statistics
+  totalProducts: integer("total_products").default(0),
+  totalOrders: integer("total_orders").default(0),
+  totalRevenue: decimal("total_revenue", { precision: 12, scale: 2 }).default("0.00"),
+  averageRating: decimal("average_rating", { precision: 3, scale: 2 }).default("0.00"),
+  totalReviews: integer("total_reviews").default(0),
+  
+  // Store Verification
+  isVerified: boolean("is_verified").default(false),
+  verifiedAt: timestamp("verified_at"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("idx_stores_user_id").on(table.userId),
+  slugIdx: index("idx_stores_slug").on(table.slug),
+  activeIdx: index("idx_stores_is_active").on(table.isActive),
+  featuredIdx: index("idx_stores_is_featured").on(table.isFeatured),
+}))
+
 // Reviews alias for productReviews table
 export const reviews = productReviews
 
@@ -485,5 +634,29 @@ export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
   product: one(products, {
     fields: [wishlistItems.productId],
     references: [products.id],
+  }),
+}))
+
+// Store Requests relations
+export const storeRequestsRelations = relations(storeRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [storeRequests.userId],
+    references: [users.id],
+  }),
+  reviewer: one(users, {
+    fields: [storeRequests.reviewedBy],
+    references: [users.id],
+  }),
+}))
+
+// Stores relations
+export const storesRelations = relations(stores, ({ one }) => ({
+  user: one(users, {
+    fields: [stores.userId],
+    references: [users.id],
+  }),
+  request: one(storeRequests, {
+    fields: [stores.requestId],
+    references: [storeRequests.id],
   }),
 }))

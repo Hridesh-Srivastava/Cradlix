@@ -151,6 +151,10 @@ export function CheckoutForm() {
         },
       }
 
+      if (typeof window.Razorpay === 'undefined') {
+        throw new Error('Razorpay SDK failed to load. Please refresh the page and try again.')
+      }
+
       const razorpay = new window.Razorpay(options)
       razorpay.open()
     } catch (error) {
@@ -250,7 +254,7 @@ export function CheckoutForm() {
           {items.map((item) => (
             <div key={item.id} className="flex justify-between items-center">
               <div className="flex-1">
-                <p className="font-medium">{item.name}</p>
+                <p className="font-medium">{item.product?.name || 'Product'}</p>
                 <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
               </div>
               <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>

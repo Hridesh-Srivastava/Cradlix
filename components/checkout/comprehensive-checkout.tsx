@@ -16,9 +16,12 @@ import { ChevronRight, CreditCard, Truck, Package, ShieldCheck, CheckCircle2 } f
 interface Address {
   id: string
   type: string
-  name: string
+  firstName: string
+  middleName?: string
+  lastName: string
   phone: string
-  address: string
+  addressLine1: string
+  addressLine2?: string
   city: string
   state: string
   pincode: string
@@ -71,6 +74,12 @@ export function ComprehensiveCheckout() {
     const script = document.createElement("script")
     script.src = "https://checkout.razorpay.com/v1/checkout.js"
     script.async = true
+    script.onload = () => {
+      console.log('Razorpay SDK loaded successfully')
+    }
+    script.onerror = () => {
+      console.error('Failed to load Razorpay SDK')
+    }
     document.body.appendChild(script)
 
     return () => {
@@ -139,9 +148,9 @@ export function ComprehensiveCheckout() {
       }))
 
       const shippingAddress = {
-        fullName: selectedAddress.name || "",
+        fullName: `${selectedAddress.firstName} ${selectedAddress.middleName ? selectedAddress.middleName + ' ' : ''}${selectedAddress.lastName}`,
         phone: selectedAddress.phone || "",
-        addressLine1: selectedAddress.address || "",
+        addressLine1: selectedAddress.addressLine1 || "",
         addressLine2: selectedAddress.addressLine2 || "",
         city: selectedAddress.city || "",
         state: selectedAddress.state || "",
@@ -200,7 +209,7 @@ export function ComprehensiveCheckout() {
           description: "Complete your purchase",
           order_id: orderData.order.id,
           prefill: {
-            name: selectedAddress.name,
+            name: `${selectedAddress.firstName} ${selectedAddress.middleName ? selectedAddress.middleName + ' ' : ''}${selectedAddress.lastName}`,
             email: session?.user?.email,
             contact: selectedAddress.phone,
           },
@@ -244,6 +253,10 @@ export function ComprehensiveCheckout() {
               toast.error("Payment cancelled")
             },
           },
+        }
+
+        if (typeof window.Razorpay === 'undefined') {
+          throw new Error('Razorpay SDK failed to load. Please refresh the page and try again.')
         }
 
         const razorpay = new window.Razorpay(options)
@@ -413,8 +426,11 @@ export function ComprehensiveCheckout() {
                   <CardContent>
                     {selectedAddress && (
                       <div>
-                        <p className="font-semibold">{selectedAddress.name}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{selectedAddress.address}</p>
+                        <p className="font-semibold">{selectedAddress.firstName} {selectedAddress.middleName ? selectedAddress.middleName + ' ' : ''}{selectedAddress.lastName}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{selectedAddress.addressLine1}</p>
+                        {selectedAddress.addressLine2 && (
+                          <p className="text-sm text-muted-foreground">{selectedAddress.addressLine2}</p>
+                        )}
                         <p className="text-sm text-muted-foreground">
                           {selectedAddress.city}, {selectedAddress.state} - {selectedAddress.pincode}
                         </p>

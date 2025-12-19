@@ -135,3 +135,141 @@ export interface Wishlist {
   product: Product
   createdAt: Date
 }
+
+export interface StoreRequest {
+  id: string
+  userId: string
+  
+  // Business Information
+  businessName: string
+  businessType: string
+  businessCategory: string
+  gstNumber?: string
+  panNumber?: string
+  
+  // Contact Information
+  contactPersonName: string
+  email: string
+  phone: string
+  alternatePhone?: string
+  
+  // Business Address
+  addressLine1: string
+  addressLine2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  
+  // Business Documents
+  businessLogo?: string
+  gstCertificate?: string
+  panCard?: string
+  businessRegistration?: string
+  addressProof?: string
+  
+  // Bank Details
+  bankName?: string
+  accountNumber?: string
+  ifscCode?: string
+  accountHolderName?: string
+  cancelledCheque?: string
+  
+  // Social Media & Website
+  websiteUrl?: string
+  facebookUrl?: string
+  instagramUrl?: string
+  twitterUrl?: string
+  
+  // Additional Information
+  businessDescription?: string
+  yearsInBusiness?: number
+  expectedMonthlyRevenue?: string
+  productCategories?: string[]
+  
+  // Request Status
+  status: "pending" | "approved" | "rejected"
+  rejectionReason?: string
+  adminNotes?: string
+  reviewedBy?: string
+  reviewedAt?: Date
+  
+  // Terms Acceptance
+  agreedToTerms: boolean
+  agreedToCommission: boolean
+  
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Store {
+  id: string
+  userId: string
+  requestId?: string
+  
+  // Business Information
+  businessName: string
+  slug: string
+  businessType: string
+  businessCategory: string
+  gstNumber?: string
+  panNumber?: string
+  
+  // Contact Information
+  contactPersonName: string
+  email: string
+  phone: string
+  alternatePhone?: string
+  
+  // Business Address
+  addressLine1: string
+  addressLine2?: string
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  
+  // Business Documents
+  businessLogo?: string
+  gstCertificate?: string
+  panCard?: string
+  businessRegistration?: string
+  addressProof?: string
+  
+  // Bank Details
+  bankName?: string
+  accountNumber?: string
+  ifscCode?: string
+  accountHolderName?: string
+  cancelledCheque?: string
+  
+  // Social Media & Website
+  websiteUrl?: string
+  facebookUrl?: string
+  instagramUrl?: string
+  twitterUrl?: string
+  
+  // Store Description
+  businessDescription?: string
+  yearsInBusiness?: number
+  productCategories?: string[]
+  
+  // Store Status & Settings
+  isActive: boolean
+  isFeatured: boolean
+  commissionRate: string
+  
+  // Store Statistics
+  totalProducts: number
+  totalOrders: number
+  totalRevenue: string
+  averageRating: string
+  totalReviews: number
+  
+  // Store Verification
+  isVerified: boolean
+  verifiedAt?: Date
+  
+  createdAt: Date
+  updatedAt: Date
+}

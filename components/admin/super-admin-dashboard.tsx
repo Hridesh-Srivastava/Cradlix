@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { UsersManagement } from "@/components/admin/users-management"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Store } from "lucide-react"
 import { UserMenu } from "@/components/auth/user-menu"
 import type { ExtendedUser } from "@/lib/auth/session"
 
@@ -25,6 +25,28 @@ export function SuperAdminDashboard() {
         ) : (
           <div className="text-sm text-muted-foreground">Loading...</div>
         )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="hover:shadow-md transition-shadow">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Store className="h-5 w-5" />
+              Store Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Review and approve vendor store registration requests
+            </p>
+            <Button asChild className="w-full">
+              <Link href="/super-admin/store-requests">
+                Manage Requests <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

@@ -67,6 +67,13 @@ export function Header() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
+          {/* Become a Seller - for logged in users who are not admin */}
+          {session?.user && !canManageProducts && (
+            <Button size="sm" variant="outline" asChild className="hidden md:inline-flex">
+              <Link href="/register-store">Become a Seller</Link>
+            </Button>
+          )}
+
           {/* Quick Add Product for admins (desktop) */}
           {canManageProducts && (
             <Button size="sm" variant="default" asChild className="hidden md:inline-flex">
@@ -131,6 +138,15 @@ export function Header() {
                     {item.name}
                   </Link>
                 ))}
+
+                {session?.user && !canManageProducts && (
+                  <>
+                    <hr className="my-4" />
+                    <Link href="/register-store" className="text-lg font-medium transition-colors hover:text-primary">
+                      Become a Seller
+                    </Link>
+                  </>
+                )}
 
                 {canManageProducts && (
                   <>

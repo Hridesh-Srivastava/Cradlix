@@ -17,13 +17,12 @@ interface Address {
   middleName?: string
   lastName: string
   phone: string
-  address: string
+  addressLine1: string
+  addressLine2?: string
   city: string
   state: string
   pincode: string
   isDefault: boolean
-  // For backward compatibility with existing code
-  name?: string
 }
 
 interface AddressSelectionProps {
@@ -41,7 +40,8 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
     middleName: "",
     lastName: "",
     phone: "",
-    address: "",
+    addressLine1: "",
+    addressLine2: "",
     city: "",
     state: "",
     pincode: "",
@@ -83,7 +83,7 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.firstName || !formData.lastName || !formData.phone || !formData.address || !formData.city || !formData.state || !formData.pincode) {
+    if (!formData.firstName || !formData.lastName || !formData.phone || !formData.addressLine1 || !formData.city || !formData.state || !formData.pincode) {
       toast.error("Please fill all required fields")
       return
     }
@@ -97,11 +97,11 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
         middleName: formData.middleName.trim() || undefined,
         lastName: formData.lastName.trim(),
         phone: formData.phone,
-        addressLine1: formData.address,
+        addressLine1: formData.addressLine1,
+        addressLine2: formData.addressLine2?.trim() || undefined,
         city: formData.city,
         state: formData.state,
-        postalCode: formData.pincode,
-        country: 'India',
+        pincode: formData.pincode,
         type: formData.type,
         isDefault: formData.isDefault,
       }
@@ -125,7 +125,8 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
           middleName: "",
           lastName: "",
           phone: "",
-          address: "",
+          addressLine1: "",
+          addressLine2: "",
           city: "",
           state: "",
           pincode: "",
@@ -149,7 +150,8 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
       middleName: address.middleName || "",
       lastName: address.lastName || "",
       phone: address.phone,
-      address: address.address,
+      addressLine1: address.addressLine1,
+      addressLine2: address.addressLine2 || "",
       city: address.city,
       state: address.state,
       pincode: address.pincode,
@@ -216,7 +218,8 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
                   middleName: "",
                   lastName: "",
                   phone: "",
-                  address: "",
+                  addressLine1: "",
+                  addressLine2: "",
                   city: "",
                   state: "",
                   pincode: "",
@@ -281,8 +284,8 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
                 <Label htmlFor="address">Address *</Label>
                 <Input
                   id="address"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange("address", e.target.value)}
+                  value={formData.addressLine1}
+                  onChange={(e) => handleInputChange("addressLine1", e.target.value)}
                   placeholder="House number, street name, area"
                   required
                 />
@@ -381,7 +384,10 @@ export function AddressSelection({ onAddressSelect, selectedAddressId }: Address
                             <p className="font-semibold">
                               {address.firstName} {address.middleName ? address.middleName + ' ' : ''}{address.lastName}
                             </p>
-                            <p className="text-sm text-muted-foreground mt-1">{address.address}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{address.addressLine1}</p>
+                            {address.addressLine2 && (
+                              <p className="text-sm text-muted-foreground">{address.addressLine2}</p>
+                            )}
                             <p className="text-sm text-muted-foreground">
                               {address.city}, {address.state} - {address.pincode}
                             </p>

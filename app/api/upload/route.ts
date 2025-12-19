@@ -7,13 +7,9 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     
-    // Check if user is authenticated and has elevated permissions
+    // Check if user is authenticated
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    const role = session.user.role as string | undefined
-    if (!role || !['admin', 'moderator', 'super-admin'].includes(role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     const formData = await request.formData()
@@ -25,8 +21,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate file type and size (max 10MB)
-    if (!file.type?.startsWith('image/')) {
-      return NextResponse.json({ error: 'Invalid file type. Only images are allowed.' }, { status: 400 })
+    const allowedTypes = ['image/', 'application/pdf']
+    const isAllowed = allowedTypes.some(type => file.type?.startsWith(type))
+    
+    if (!isAllowed) {
+      return NextResponse.json({ error: 'Invalid file type. Only images and PDFs are allowed.' }, { status: 400 })
     }
     if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: 'File too large. Max size is 10MB.' }, { status: 400 })
@@ -37,13 +36,15 @@ export async function POST(request: NextRequest) {
       folder = 'baby-ecommerce/uploads'
     }
 
-    // Convert file to buffer
+    // Convert file to buffer and create data URI
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
+    const base64 = buffer.toString('base64')
+    const dataURI = `data:${file.type};base64,${base64}`
 
     // Upload to Cloudinary
-    const result = await uploadImage(buffer, folder, {
-      public_id: `${folder}/${Date.now()}-${Math.random().toString(36).substring(7)}`,
+    const result = await uploadImage(dataURI, folder, {
+      resource_type: 'auto',
     })
 
     if (!result.success) {
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      url: result.data?.secure_url,
       data: result.data,
     })
   } catch (error) {
